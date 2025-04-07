@@ -1,113 +1,146 @@
-# MesaYa Frontend
+# MesaYa - Sistema de Gestión para Restaurantes
 
-A modern, scalable React frontend for the MesaYa restaurant management system.
+MesaYa es una aplicación web moderna para la gestión de restaurantes, desarrollada con Next.js 13+ y TypeScript. El sistema permite gestionar clientes, personal, platos y pedidos de manera eficiente.
 
-## Project Structure
+## 🚀 Características Principales
+
+- **Gestión de Clientes**: Registro y seguimiento de clientes
+- **Gestión de Personal**: Administración del personal del restaurante
+- **Gestión de Platos**: Catálogo de platos y menú
+- **Gestión de Pedidos**: Sistema completo de pedidos y seguimiento
+- **Interfaz Moderna**: Diseño responsivo y amigable
+- **Búsqueda en Tiempo Real**: Filtrado y búsqueda de información
+- **Navegación Intuitiva**: Sistema de navegación con breadcrumbs
+
+## 🛠️ Tecnologías Utilizadas
+
+- **Next.js 13+**: Framework de React con App Router
+- **TypeScript**: Lenguaje de programación tipado
+- **Tailwind CSS**: Framework de estilos
+- **Shadcn/ui**: Componentes de UI reutilizables
+- **Lucide Icons**: Iconos modernos y consistentes
+
+## 📁 Estructura del Proyecto
 
 ```
 src/
-├── components/          # Reusable React components
-│   ├── ui/             # Generic UI components (buttons, inputs, etc.)
-│   ├── layout/         # Layout components (header, footer, etc.)
-│   └── features/       # Feature-specific components
-├── pages/              # Next.js pages/routes
-├── hooks/              # Custom React hooks
-├── lib/                # Utility functions and API helpers
-├── styles/             # Global and component-specific styles
-├── context/            # React Context providers
-└── types/              # TypeScript type definitions
+├── app/                    # Directorio principal de la aplicación
+│   ├── layout.tsx         # Layout principal
+│   ├── page.tsx           # Página de inicio
+│   ├── clients/           # Sección de clientes
+│   ├── staff/             # Sección de personal
+│   ├── plates/            # Sección de platos
+│   └── order/             # Sección de pedidos
+├── components/            # Componentes reutilizables
+│   ├── ui/               # Componentes de UI base
+│   ├── header.tsx        # Encabezado de la aplicación
+│   ├── sidebar-nav.tsx   # Navegación lateral
+│   └── breadcrumb.tsx    # Navegación con migas de pan
+└── styles/               # Estilos globales
 ```
 
-## Getting Started
+## 🚀 Inicio Rápido
 
-### Prerequisites
+1. **Clonar el repositorio**
+   ```bash
+   git clone [url-del-repositorio]
+   cd MesaYa
+   ```
 
-- Node.js 16.x or later
-- npm or yarn
+2. **Instalar dependencias**
+   ```bash
+   npm install
+   # o
+   yarn install
+   ```
 
-### Installation
+3. **Iniciar el servidor de desarrollo**
+   ```bash
+   npm run dev
+   # o
+   yarn dev
+   ```
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/mesaya-frontend.git
-cd mesaya-frontend
-```
+4. **Abrir el navegador**
+   ```
+   http://localhost:3000
+   ```
 
-2. Install dependencies:
-```bash
-npm install
-# or
-yarn install
-```
+## 📱 Páginas Principales
 
-3. Start the development server:
-```bash
-npm run dev
-# or
-yarn dev
-```
+### Dashboard
+- Vista general del restaurante
+- Estadísticas rápidas
+- Acceso rápido a todas las secciones
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+### Clientes
+- Lista de clientes
+- Búsqueda y filtrado
+- Detalles de cliente
+- Historial de pedidos por cliente
 
-## Features
+### Personal
+- Gestión de empleados
+- Roles y permisos
+- Estado de empleados
+- Historial de empleados
 
-- 🎨 Modern UI with Tailwind CSS
-- 📱 Responsive design
-- 🔒 Authentication with JWT
-- 🚀 Fast page loads with Next.js
-- 📦 Modular component architecture
-- 🎯 Type-safe with TypeScript
+### Platos
+- Catálogo de platos
+- Categorías
+- Precios y disponibilidad
+- Imágenes y descripciones
 
-## Development
+### Pedidos
+- Creación de pedidos
+- Seguimiento en tiempo real
+- Historial de pedidos
+- Estados de pedidos
 
-### Code Style
+## 🎨 Componentes UI
 
-- Follow the [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript)
-- Use TypeScript for type safety
-- Write meaningful component and function names
-- Add comments for complex logic
+El proyecto utiliza una combinación de componentes personalizados y shadcn/ui para crear una interfaz consistente y moderna:
 
-### Component Structure
+- **Cards**: Para mostrar información agrupada
+- **Tables**: Para listar datos
+- **Forms**: Para entrada de datos
+- **Modals**: Para diálogos y confirmaciones
+- **Badges**: Para estados y etiquetas
 
-Components should follow this structure:
+## 🔒 Seguridad
 
-```typescript
-import React from 'react';
-import { ComponentProps } from '@/types';
+- Autenticación de usuarios
+- Control de acceso basado en roles
+- Protección de rutas
+- Validación de datos
 
-interface Props extends ComponentProps {
-  // Component-specific props
-}
+## 📱 Responsive Design
 
-export const Component: React.FC<Props> = ({ children, ...props }) => {
-  return (
-    // Component JSX
-  );
-};
-```
+La aplicación está diseñada para funcionar en:
+- Dispositivos móviles
+- Tablets
+- Escritorio
+- Pantallas grandes
 
-### State Management
+## 🤝 Contribución
 
-- Use React Context for global state
-- Use local state for component-specific state
-- Use custom hooks for reusable state logic
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
-## Building for Production
+## 📄 Licencia
 
-```bash
-npm run build
-# or
-yarn build
-```
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.md) para más detalles.
 
-## Contributing
+## 👥 Autores
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- Tu Nombre - [@tutwitter](https://twitter.com/tutwitter)
 
-## License
+## 🙏 Agradecimientos
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+- [Next.js](https://nextjs.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Lucide Icons](https://lucide.dev/) 
