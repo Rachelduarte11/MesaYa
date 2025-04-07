@@ -1,6 +1,28 @@
 # MesaYa - Sistema de Gestión para Restaurantes
 
+![MesaYa Logo](docs/mesaya-logo.png)
+
 MesaYa es una aplicación web moderna para la gestión de restaurantes, desarrollada con Next.js 13+ y TypeScript. El sistema permite gestionar clientes, personal, platos y pedidos de manera eficiente.
+
+## 📑 Tabla de Contenidos
+
+- [Características Principales](#-características-principales)
+- [Tecnologías Utilizadas](#️-tecnologías-utilizadas)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
+- [Inicio Rápido](#-inicio-rápido)
+- [Páginas Principales](#-páginas-principales)
+  - [Dashboard](#dashboard)
+  - [Clientes](#clientes)
+  - [Personal](#personal)
+  - [Platos](#platos)
+  - [Pedidos](#pedidos)
+- [Componentes UI](#-componentes-ui)
+- [Seguridad](#-seguridad)
+- [Responsive Design](#-responsive-design)
+- [Contribución](#-contribución)
+- [Licencia](#-licencia)
+- [Autores](#-autores)
+- [Agradecimientos](#-agradecimientos)
 
 ## 🚀 Características Principales
 
@@ -136,11 +158,14 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.m
 
 ## 👥 Autores
 
-- Tu Nombre - [@tutwitter](https://twitter.com/tutwitter)
+- Rachel Duarte - [LinkedIn](https://www.linkedin.com/in/rachel-duarte-nunez/)
+- Esclender Lugo - [LinkedIn](https://www.linkedin.com/in/esclender-lugo/)
+- Ivan Mera - [LinkedIn](https://www.linkedin.com/in/ivan-mera-ibarguen-a9b52a109/)
 
 ## 🙏 Agradecimientos
 
 - [Next.js](https://nextjs.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [shadcn/ui](https://ui.shadcn.com/)
-- [Lucide Icons](https://lucide.dev/) 
+- [Lucide Icons](https://lucide.dev/)
+- [V0 by Vercel](https://v0.dev/) 
