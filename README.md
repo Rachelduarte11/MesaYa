@@ -136,10 +136,12 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.m
 
 ## 👥 Autores
 
-- Tu Nombre - [@tutwitter](https://twitter.com/tutwitter)
-
+- Rachel Duarte - [@Linkedin](https://twitter.com/tutwitter](https://www.linkedin.com/in/rachel-duarte-nunez/)
+- Esclender Lugo - [@Linkedin](https://twitter.com/tutwitter](https://www.linkedin.com/in/rachel-duarte-nunez/](https://www.linkedin.com/in/esclender-lugo/)
+- Ivan Mera - [@Linkedin](https://twitter.com/tutwitter](https://www.linkedin.com/in/rachel-duarte-nunez/](https://www.linkedin.com/in/ivan-mera-ibarguen-a9b52a109/)
+- 
 ## 🙏 Agradecimientos
-
+- [V0 by Vercel](https://v0.dev)
 - [Next.js](https://nextjs.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [shadcn/ui](https://ui.shadcn.com/)
