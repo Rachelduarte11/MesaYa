@@ -1,6 +1,6 @@
 # MesaYa - Sistema de Gestión para Restaurantes
 
-![MesaYa Logo](docs/mesaya-logo.png)
+![MesaYa Logo](./public/images/mesa-ya.png)
 
 MesaYa es una aplicación web moderna para la gestión de restaurantes, desarrollada con Next.js 13+ y TypeScript. El sistema permite gestionar clientes, personal, platos y pedidos de manera eficiente.
 
