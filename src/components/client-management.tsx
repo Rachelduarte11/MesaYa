@@ -1,95 +1,64 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Search, Edit, Trash2, BadgeCheck, UserPlus2 } from "lucide-react"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Search, FileText, Edit, Trash2, UserPlus } from "lucide-react"
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 // Sample client data
 const initialClients = [
   {
     id: 1,
-    name: "Floyd Miles",
-    phone: "555-123-4567",
-    email: "floyd@example.com",
-    address: "123 Main St, Anytown",
-    visits: 8,
-    lastVisit: "2025-04-01",
+    name: "Juan Pérez",
+    email: "juan@example.com",
+    phone: "555-111-2222",
+    createdAt: "2024-01-15",
   },
   {
     id: 2,
-    name: "Jane Cooper",
-    phone: "555-987-6543",
-    email: "jane@example.com",
-    address: "456 Oak Ave, Somewhere",
-    visits: 12,
-    lastVisit: "2025-04-05",
+    name: "María García",
+    email: "maria@example.com",
+    phone: "555-333-4444",
+    createdAt: "2024-02-01",
   },
   {
     id: 3,
-    name: "Esther Howard",
-    phone: "555-456-7890",
-    email: "esther@example.com",
-    address: "789 Pine Rd, Elsewhere",
-    visits: 5,
-    lastVisit: "2025-03-28",
+    name: "Carlos López",
+    email: "carlos@example.com",
+    phone: "555-555-6666",
+    createdAt: "2024-02-15",
   },
 ]
 
 export function ClientManagement() {
+  const router = useRouter()
   const [clients, setClients] = useState(initialClients)
   const [searchTerm, setSearchTerm] = useState("")
-  const [newClient, setNewClient] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-  })
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [selectedClient, setSelectedClient] = useState<null | (typeof initialClients)[0]>(null)
-  const [isBillDialogOpen, setIsBillDialogOpen] = useState(false)
+  const [clientToDelete, setClientToDelete] = useState<number | null>(null)
 
   const filteredClients = clients.filter(
     (client) =>
       client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.phone.includes(searchTerm) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase()),
+      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.phone.includes(searchTerm)
   )
 
-  const handleAddClient = () => {
-    const id = clients.length > 0 ? Math.max(...clients.map((c) => c.id)) + 1 : 1
-    const today = new Date().toISOString().split("T")[0]
-
-    setClients([
-      ...clients,
-      {
-        ...newClient,
-        id,
-        visits: 1,
-        lastVisit: today,
-      },
-    ])
-
-    setNewClient({ name: "", phone: "", email: "", address: "" })
-    setIsAddDialogOpen(false)
-  }
-
-  const handleCreateBill = () => {
-    // In a real app, this would create a bill for the selected client
-    // and potentially integrate with the cart/order system
-    setIsBillDialogOpen(false)
+  const handleDelete = (clientId: number) => {
+    setClients(clients.filter(client => client.id !== clientId))
+    setClientToDelete(null)
   }
 
   return (
@@ -106,89 +75,27 @@ export function ClientManagement() {
           />
         </div>
 
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-green-600 hover:bg-green-700">
-              <UserPlus className="mr-2 h-4 w-4" /> Add New Client
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Client</DialogTitle>
-              <DialogDescription>Enter the client's information below.</DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
-                <Input
-                  id="name"
-                  value={newClient.name}
-                  onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="phone" className="text-right">
-                  Phone
-                </Label>
-                <Input
-                  id="phone"
-                  value={newClient.phone}
-                  onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="email" className="text-right">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  value={newClient.email}
-                  onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="address" className="text-right">
-                  Address
-                </Label>
-                <Input
-                  id="address"
-                  value={newClient.address}
-                  onChange={(e) => setNewClient({ ...newClient, address: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button className="bg-green-600 hover:bg-green-700" onClick={handleAddClient}>
-                Save Client
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button 
+          className="bg-green-600 hover:bg-green-700"
+          onClick={() => router.push("/clients/add")}
+        >
+          <UserPlus2 className="mr-2 h-4 w-4" /> Add New Client
+        </Button>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Client Database</CardTitle>
-          <CardDescription>Manage your restaurant clients and create bills</CardDescription>
+          <CardDescription>Manage your restaurant clients</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Visits</TableHead>
-                <TableHead>Last Visit</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Created At</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -196,77 +103,23 @@ export function ClientManagement() {
               {filteredClients.map((client) => (
                 <TableRow key={client.id}>
                   <TableCell className="font-medium">{client.name}</TableCell>
-                  <TableCell>{client.phone}</TableCell>
                   <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.visits}</TableCell>
-                  <TableCell>{client.lastVisit}</TableCell>
+                  <TableCell>{client.phone}</TableCell>
+                  <TableCell>{client.createdAt}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
-                      <Dialog
-                        open={isBillDialogOpen && selectedClient?.id === client.id}
-                        onOpenChange={(open) => {
-                          setIsBillDialogOpen(open)
-                          if (open) setSelectedClient(client)
-                        }}
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => router.push(`/clients/${client.id}/edit`)}
                       >
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="icon">
-                            <FileText className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Create Bill for {client.name}</DialogTitle>
-                            <DialogDescription>
-                              Generate a bill for this client based on their current order.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="py-4">
-                            <div className="mb-4">
-                              <Label>Client Information</Label>
-                              <div className="text-sm mt-1">
-                                <p>
-                                  <strong>Name:</strong> {client.name}
-                                </p>
-                                <p>
-                                  <strong>Phone:</strong> {client.phone}
-                                </p>
-                                <p>
-                                  <strong>Email:</strong> {client.email}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="mb-4">
-                              <Label>Current Order</Label>
-                              <div className="text-sm mt-1 p-3 border rounded-md">
-                                <p>Table 4</p>
-                                <p>4 Items</p>
-                                <p>Total: $61.96</p>
-                              </div>
-                            </div>
-
-                            <div>
-                              <Label htmlFor="notes">Additional Notes</Label>
-                              <Input id="notes" className="mt-1" placeholder="Add any special notes for this bill" />
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsBillDialogOpen(false)}>
-                              Cancel
-                            </Button>
-                            <Button className="bg-green-600 hover:bg-green-700" onClick={handleCreateBill}>
-                              Generate Bill
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-
-                      <Button variant="outline" size="icon">
                         <Edit className="h-4 w-4" />
                       </Button>
-
-                      <Button variant="outline" size="icon">
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => setClientToDelete(client.id)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -282,6 +135,27 @@ export function ClientManagement() {
           </div>
         </CardFooter>
       </Card>
+
+      <AlertDialog open={clientToDelete !== null} onOpenChange={() => setClientToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Esto eliminará permanentemente el cliente
+              y todos sus datos asociados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => clientToDelete && handleDelete(clientToDelete)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -1,21 +1,11 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Edit, Trash2, BadgeCheck, UserPlus2 } from "lucide-react"
 
 // Sample employee data
@@ -59,15 +49,9 @@ const initialEmployees = [
 ]
 
 export function EmployeeManagement() {
+  const router = useRouter()
   const [employees, setEmployees] = useState(initialEmployees)
   const [searchTerm, setSearchTerm] = useState("")
-  const [newEmployee, setNewEmployee] = useState({
-    name: "",
-    position: "",
-    phone: "",
-    email: "",
-  })
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
   const filteredEmployees = employees.filter(
     (employee) =>
@@ -76,24 +60,6 @@ export function EmployeeManagement() {
       employee.phone.includes(searchTerm) ||
       employee.email.toLowerCase().includes(searchTerm.toLowerCase()),
   )
-
-  const handleAddEmployee = () => {
-    const id = employees.length > 0 ? Math.max(...employees.map((e) => e.id)) + 1 : 1
-    const today = new Date().toISOString().split("T")[0]
-
-    setEmployees([
-      ...employees,
-      {
-        ...newEmployee,
-        id,
-        startDate: today,
-        status: "Active",
-      },
-    ])
-
-    setNewEmployee({ name: "", position: "", phone: "", email: "" })
-    setIsAddDialogOpen(false)
-  }
 
   return (
     <div className="space-y-6">
@@ -109,80 +75,12 @@ export function EmployeeManagement() {
           />
         </div>
 
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-green-600 hover:bg-green-700">
-              <UserPlus2 className="mr-2 h-4 w-4" /> Add New Employee
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Employee</DialogTitle>
-              <DialogDescription>Enter the employee's information below.</DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
-                <Input
-                  id="name"
-                  value={newEmployee.name}
-                  onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="position" className="text-right">
-                  Position
-                </Label>
-                <Select onValueChange={(value) => setNewEmployee({ ...newEmployee, position: value })}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select position" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Manager">Manager</SelectItem>
-                    <SelectItem value="Chef">Chef</SelectItem>
-                    <SelectItem value="Waitstaff">Waitstaff</SelectItem>
-                    <SelectItem value="Bartender">Bartender</SelectItem>
-                    <SelectItem value="Host">Host</SelectItem>
-                    <SelectItem value="Dishwasher">Dishwasher</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="phone" className="text-right">
-                  Phone
-                </Label>
-                <Input
-                  id="phone"
-                  value={newEmployee.phone}
-                  onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="email" className="text-right">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  value={newEmployee.email}
-                  onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button className="bg-green-600 hover:bg-green-700" onClick={handleAddEmployee}>
-                Save Employee
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button 
+          className="bg-green-600 hover:bg-green-700"
+          onClick={() => router.push("/staff/add")}
+        >
+          <UserPlus2 className="mr-2 h-4 w-4" /> Add New Employee
+        </Button>
       </div>
 
       <Card>
@@ -218,9 +116,6 @@ export function EmployeeManagement() {
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="icon">
-                        <BadgeCheck className="h-4 w-4" />
-                      </Button>
                       <Button variant="outline" size="icon">
                         <Edit className="h-4 w-4" />
                       </Button>

@@ -17,42 +17,86 @@ import {
   ClipboardList,
   ChevronDown,
   ChevronRight,
+  Home,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 export function SidebarNav() {
-  const [pedidoExpanded, setPedidoExpanded] = useState(false)
+  const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({})
+  const pathname = usePathname()
+
+  const toggleSubmenu = (menuName: string) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [menuName]: !prev[menuName]
+    }))
+  }
 
   const navItems = [
-    { icon: Menu, label: "Menu", color: "text-green-600" },
+    { icon: Home, label: "Inicio", color: "text-green-600", path: "/" },
     {
       icon: ShoppingBag,
-      label: "Pedido",
-      color: "text-gray-600",
+      label: "Pedidos",
+      color: pathname.startsWith("/order") ? "text-green-600" : "text-gray-600",
       hasSubmenu: true,
-      path: "/pedido",
+      menuKey: "pedidos",
+      path: "/order",
       submenuItems: [
-        { icon: PlusCircle, label: "Agregar Pedido", path: "/pedido/agregar" },
-        { icon: Eye, label: "Ver Pedido", path: "/pedido/ver" },
-        { icon: ClipboardList, label: "Detalle de Pedidos", path: "/pedido/detalles" },
+        { icon: PlusCircle, label: "Agregar Pedido", path: "/order/add" },
+        { icon: Eye, label: "Ver Pedidos", path: "/order/see" },
+        { icon: ClipboardList, label: "Detalles de Pedidos", path: "/order/details" },
       ],
     },
-    { icon: Users, label: "Client Management", color: "text-gray-600" },
-    { icon: UserCog, label: "Staff Management", color: "text-gray-600" },
-    { icon: Utensils, label: "Plates", color: "text-gray-600" },
-    { icon: Settings, label: "Settings", color: "text-gray-600" },
+    { 
+      icon: Users, 
+      label: "Clientes", 
+      color: pathname.startsWith("/clients") ? "text-green-600" : "text-gray-600", 
+      path: "/clients" 
+    },
+    { 
+      icon: UserCog, 
+      label: "Personal", 
+      color: pathname.startsWith("/staff") ? "text-green-600" : "text-gray-600", 
+      path: "/staff" 
+    },
+    { 
+      icon: Utensils, 
+      label: "Platos", 
+      color: pathname.startsWith("/plates") ? "text-green-600" : "text-gray-600", 
+      path: "/plates" 
+    },
+    {
+      icon: Menu,
+      label: "Catalogo",
+      color: pathname.startsWith("/catalog") ? "text-green-600" : "text-gray-600",
+      hasSubmenu: true,
+      menuKey: "catalogo",
+      path: "/catalog",
+      submenuItems: [
+        { icon: Receipt, label: "Tipo de Documento", path: "/catalog/document-type" },
+        { icon: Users, label: "Rol / Posición", path: "/catalog/role" },
+        { icon: Home, label: "Distrito", path: "/catalog/district" },
+      ],
+    },
+    { 
+      icon: Settings, 
+      label: "Configuración", 
+      color: pathname.startsWith("/settings") ? "text-green-600" : "text-gray-600", 
+      path: "/settings" 
+    },
   ]
 
   return (
     <div className="w-64 p-4 border-r h-screen">
       <div className="flex items-center gap-2 mb-8">
         <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-01-12%20at%2012.32.42%20PM-QicgA83ZI0TfZlOynDOqlhOGnbwzEv.jpeg"
-          alt="Chili POS Logo"
+          src="/images/mesa-ya.png"
+          alt="MesaYa Logo"
           className="w-8 h-8"
         />
-        <span className="font-semibold">CHILI POS</span>
+        <span className="font-semibold">MesaYa</span>
       </div>
       <nav className="space-y-2">
         {navItems.map((item, index) => (
@@ -62,31 +106,41 @@ export function SidebarNav() {
                 variant="ghost"
                 className={`w-full justify-start ${item.color}`}
                 onClick={() => {
-                  if (item.hasSubmenu) {
-                    setPedidoExpanded(!pedidoExpanded)
+                  if (item.hasSubmenu && item.menuKey) {
+                    toggleSubmenu(item.menuKey)
                   }
                 }}
-                asChild={!item.hasSubmenu}
               >
                 <div className="flex w-full items-center">
                   <item.icon className="mr-2 h-4 w-4" />
                   {item.label}
                   <div className="ml-auto">
-                    {pedidoExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    {expandedMenus[item.menuKey as string] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   </div>
                 </div>
               </Button>
             ) : (
-              <Button variant="ghost" className={`w-full justify-start ${item.color}`}>
-                <item.icon className="mr-2 h-4 w-4" />
-                {item.label}
+              <Button 
+                variant="ghost" 
+                className={`w-full justify-start ${item.color}`}
+                asChild
+              >
+                <Link href={item.path}>
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {item.label}
+                </Link>
               </Button>
             )}
 
-            {item.hasSubmenu && pedidoExpanded && (
+            {item.hasSubmenu && expandedMenus[item.menuKey as string] && (
               <div className="pl-6 mt-1 space-y-1">
                 {item.submenuItems.map((subItem, subIndex) => (
-                  <Button key={subIndex} variant="ghost" className="w-full justify-start text-gray-600" asChild>
+                  <Button 
+                    key={subIndex} 
+                    variant="ghost" 
+                    className={`w-full justify-start ${pathname === subItem.path ? "text-green-600" : "text-gray-600"}`} 
+                    asChild
+                  >
                     <Link href={subItem.path}>
                       <subItem.icon className="mr-2 h-4 w-4" />
                       {subItem.label}
@@ -100,9 +154,8 @@ export function SidebarNav() {
       </nav>
       <Button variant="ghost" className="w-full justify-start mt-auto text-gray-600 absolute bottom-4">
         <LogOut className="mr-2 h-4 w-4" />
-        Logout
+        Cerrar Sesión
       </Button>
     </div>
   )
 }
-
