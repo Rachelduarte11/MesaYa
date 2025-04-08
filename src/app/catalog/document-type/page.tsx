@@ -1,10 +1,21 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { DataTable } from "@/components/ui/data-table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface DocumentType {
   id: number
@@ -14,6 +25,7 @@ interface DocumentType {
 }
 
 export default function DocumentTypePage() {
+  const router = useRouter()
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([
     {
       id: 1,
@@ -34,6 +46,7 @@ export default function DocumentTypePage() {
       createdAt: "2024-03-15",
     }
   ])
+  const [documentTypeToDelete, setDocumentTypeToDelete] = useState<DocumentType | null>(null)
 
   const columns = [
     {
@@ -49,6 +62,11 @@ export default function DocumentTypePage() {
       accessorKey: "createdAt" as keyof DocumentType,
     },
   ]
+
+  const handleDelete = (documentType: DocumentType) => {
+    setDocumentTypes(documentTypes.filter(d => d.id !== documentType.id))
+    setDocumentTypeToDelete(null)
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -67,20 +85,34 @@ export default function DocumentTypePage() {
             data={documentTypes}
             title="Tipos de Documento"
             onAdd={() => {
-              // Add implementation
-              console.log("Add new document type")
+              router.push("/catalog/document-type/add")
             }}
             onEdit={(item: DocumentType) => {
-              // Edit implementation
-              console.log("Edit document type", item)
+              router.push(`/catalog/document-type/${item.id}/edit`)
             }}
             onDelete={(item: DocumentType) => {
-              // Delete implementation
-              console.log("Delete document type", item)
+              setDocumentTypeToDelete(item)
             }}
           />
         </div>
       </div>
+
+      <AlertDialog open={!!documentTypeToDelete} onOpenChange={() => setDocumentTypeToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el tipo de documento "{documentTypeToDelete?.name}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => documentTypeToDelete && handleDelete(documentTypeToDelete)}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 } 

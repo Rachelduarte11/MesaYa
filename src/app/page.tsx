@@ -3,7 +3,6 @@ import { Header } from "../components/header"
 import { CategoryFilter } from "../components/category-filter"
 import { FoodGrid } from "../components/food-grid"
 import { Cart } from "../components/cart"
-import { Footer } from "../components/footer"
 
 export default function POSPage() {
   return (
@@ -18,7 +17,6 @@ export default function POSPage() {
           </main>
           <Cart />
         </div>
-        <Footer />
       </div>
     </div>
   )
