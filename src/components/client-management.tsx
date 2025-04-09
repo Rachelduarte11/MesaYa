@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Edit, Trash2, BadgeCheck, UserPlus2 } from "lucide-react"
+import { Search, Edit, Trash2, UserPlus2, Loader2 } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,48 +17,61 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Cliente } from "@/services/api/types"
 
-// Sample client data
-const initialClients = [
-  {
-    id: 1,
-    name: "Juan Pérez",
-    email: "juan@example.com",
-    phone: "555-111-2222",
-    createdAt: "2024-01-15",
-  },
-  {
-    id: 2,
-    name: "María García",
-    email: "maria@example.com",
-    phone: "555-333-4444",
-    createdAt: "2024-02-01",
-  },
-  {
-    id: 3,
-    name: "Carlos López",
-    email: "carlos@example.com",
-    phone: "555-555-6666",
-    createdAt: "2024-02-15",
-  },
-]
+interface ClientManagementProps {
+  clients: Cliente[]
+  loading: boolean
+  error: string | null
+  onSearch: (term: string) => void
+  onDelete: (id: string) => Promise<void>
+}
 
-export function ClientManagement() {
+export function ClientManagement({ 
+  clients = [], // Default empty array if undefined
+  loading, 
+  error, 
+  onSearch, 
+  onDelete 
+}: ClientManagementProps) {
+  console.log('ClientManagement rendered with clients:', clients);
+  console.log('Loading state:', loading);
+  console.log('Error state:', error);
+
   const router = useRouter()
-  const [clients, setClients] = useState(initialClients)
   const [searchTerm, setSearchTerm] = useState("")
-  const [clientToDelete, setClientToDelete] = useState<number | null>(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedClient, setSelectedClient] = useState<Cliente | null>(null)
 
-  const filteredClients = clients.filter(
-    (client) =>
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.phone.includes(searchTerm)
-  )
+  // Debug breakpoint condition: clients is undefined or null
+  // Right-click here and add conditional breakpoint: clients === undefined || clients === null
+  const handleSearch = (term: string) => {
+    onSearch(term)
+  }
 
-  const handleDelete = (clientId: number) => {
-    setClients(clients.filter(client => client.id !== clientId))
-    setClientToDelete(null)
+  const handleDelete = async (clientId: string) => {
+    try {
+      await onDelete(clientId)
+      setSelectedClient(null)
+    } catch (err) {
+      console.error('Error al eliminar el cliente:', err)
+    }
+  }
+
+  if (loading && !clients.length) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        {error}
+      </div>
+    )
   }
 
   return (
@@ -68,10 +81,10 @@ export function ClientManagement() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
             type="text"
-            placeholder="Search clients..."
+            placeholder="Buscar clientes..."
             className="pl-10"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
           />
         </div>
 
@@ -79,33 +92,45 @@ export function ClientManagement() {
           className="bg-green-600 hover:bg-green-700"
           onClick={() => router.push("/clients/add")}
         >
-          <UserPlus2 className="mr-2 h-4 w-4" /> Add New Client
+          <UserPlus2 className="mr-2 h-4 w-4" /> Agregar Cliente
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Client Database</CardTitle>
-          <CardDescription>Manage your restaurant clients</CardDescription>
+          <CardTitle>Base de Datos de Clientes</CardTitle>
+          <CardDescription>Gestiona los clientes de tu restaurante</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>Nombre</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>Teléfono</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredClients.map((client) => (
+              {clients.map((client) => (
                 <TableRow key={client.id}>
-                  <TableCell className="font-medium">{client.name}</TableCell>
+                  <TableCell className="font-medium">
+                    {client.nombre} {client.apellido}
+                  </TableCell>
                   <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.phone}</TableCell>
-                  <TableCell>{client.createdAt}</TableCell>
+                  <TableCell>{client.telefono}</TableCell>
+                  <TableCell>
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        client.estado === 'activo'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {client.estado}
+                    </span>
+                  </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
                       <Button 
@@ -118,7 +143,7 @@ export function ClientManagement() {
                       <Button 
                         variant="outline" 
                         size="icon"
-                        onClick={() => setClientToDelete(client.id)}
+                        onClick={() => setSelectedClient(client)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -131,12 +156,12 @@ export function ClientManagement() {
         </CardContent>
         <CardFooter className="flex justify-between">
           <div className="text-sm text-gray-500">
-            Showing {filteredClients.length} of {clients.length} clients
+            Mostrando {clients.length} clientes
           </div>
         </CardFooter>
       </Card>
 
-      <AlertDialog open={clientToDelete !== null} onOpenChange={() => setClientToDelete(null)}>
+      <AlertDialog open={selectedClient !== null} onOpenChange={() => setSelectedClient(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
@@ -148,7 +173,7 @@ export function ClientManagement() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={() => clientToDelete && handleDelete(clientToDelete)}
+              onClick={() => selectedClient && handleDelete(selectedClient.id)}
               className="bg-red-600 hover:bg-red-700"
             >
               Eliminar

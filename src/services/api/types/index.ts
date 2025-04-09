@@ -47,34 +47,30 @@ export interface ChangePasswordRequest {
 
 // Empleado (Employee) types
 export interface Empleado {
-  id: string;
+  codigo: number;
   nombre: string;
-  apellido: string;
-  dni: string;
-  email: string;
-  telefono: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  documento: string;
   direccion: string;
-  fechaContratacion: string;
-  salario: number;
-  estado: 'activo' | 'inactivo';
-  rol: 'admin' | 'mesero' | 'cocinero' | 'cajero';
+  telefono: string;
+  email: string;
+  estado: boolean;
 }
 
 export interface CreateEmpleadoRequest {
   nombre: string;
-  apellido: string;
-  dni: string;
-  email: string;
-  telefono: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  documento: string;
   direccion: string;
-  fechaContratacion: string;
-  salario: number;
-  estado: 'activo' | 'inactivo';
-  rol: 'admin' | 'mesero' | 'cocinero' | 'cajero';
+  telefono: string;
+  email: string;
+  estado: boolean;
 }
 
 export interface UpdateEmpleadoRequest extends Partial<CreateEmpleadoRequest> {
-  id: string;
+  codigo: number;
 }
 
 // Cliente (Customer) types

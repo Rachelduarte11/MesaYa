@@ -3,22 +3,22 @@ const API_ENDPOINTS = {
   
   // Empleado endpoints
   empleados: {
-    list: '/empleados',
+    list: '/api/empleados',
     detail: (id: string) => `/api/empleados/${id}`,
-    create: '/empleados',
+    create: '/api/empleados',
     update: (id: string) => `/api/empleados/${id}`,
     delete: (id: string) => `/api/empleados/${id}`,
-    search: '/empleados/search',
+    search: '/api/empleados/search',
   },
   
   // Cliente endpoints
   clientes: {
-    list: '/clientes',
+    list: '/api/clientes',
     detail: (id: string) => `/api/clientes/${id}`,
-    create: '/clientes',
+    create: '/api/clientes',
     update: (id: string) => `/api/clientes/${id}`,
     delete: (id: string) => `/api/clientes/${id}`,
-    search: '/clientes/search',
+    search: '/api/clientes/search',
   },
   
   // Add more endpoint groups as needed

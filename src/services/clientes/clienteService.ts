@@ -9,20 +9,20 @@ import {
 
 export const clienteService = {
   // Get all clientes
-  async getAll(): Promise<ApiResponse<Cliente[]>> {
-    const response = await api.get<ApiResponse<Cliente[]>>(API_ENDPOINTS.clientes.list);
+  async getAll(): Promise<Cliente[]> {
+    const response = await api.get<Cliente[]>(API_ENDPOINTS.clientes.list);
     return response.data;
   },
 
   // Get cliente by ID
-  async getById(id: string): Promise<ApiResponse<Cliente>> {
-    const response = await api.get<ApiResponse<Cliente>>(API_ENDPOINTS.clientes.detail(id));
+  async getById(id: string): Promise<Cliente> {
+    const response = await api.get<Cliente>(API_ENDPOINTS.clientes.detail(id));
     return response.data;
   },
 
   // Create new cliente
-  async create(cliente: CreateClienteRequest): Promise<ApiResponse<Cliente>> {
-    const response = await api.post<ApiResponse<Cliente>>(
+  async create(cliente: CreateClienteRequest): Promise<Cliente> {
+    const response = await api.post<Cliente>(
       API_ENDPOINTS.clientes.create,
       cliente
     );
@@ -30,8 +30,8 @@ export const clienteService = {
   },
 
   // Update cliente
-  async update(cliente: UpdateClienteRequest): Promise<ApiResponse<Cliente>> {
-    const response = await api.put<ApiResponse<Cliente>>(
+  async update(cliente: UpdateClienteRequest): Promise<Cliente> {
+    const response = await api.put<Cliente>(
       API_ENDPOINTS.clientes.update(cliente.id),
       cliente
     );
@@ -44,8 +44,8 @@ export const clienteService = {
   },
 
   // Search clientes
-  async search(query: string): Promise<ApiResponse<Cliente[]>> {
-    const response = await api.get<ApiResponse<Cliente[]>>(API_ENDPOINTS.clientes.search, {
+  async search(query: string): Promise<Cliente[]> {
+    const response = await api.get<Cliente[]>(API_ENDPOINTS.clientes.search, {
       params: { query }
     });
     return response.data;
