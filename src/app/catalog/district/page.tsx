@@ -1,10 +1,21 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { DataTable } from "@/components/ui/data-table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface District {
   id: number
@@ -16,6 +27,7 @@ interface District {
 }
 
 export default function DistrictPage() {
+  const router = useRouter()
   const [districts, setDistricts] = useState<District[]>([
     {
       id: 1,
@@ -50,6 +62,7 @@ export default function DistrictPage() {
       createdAt: "2024-03-15",
     }
   ])
+  const [districtToDelete, setDistrictToDelete] = useState<District | null>(null)
 
   const columns = [
     {
@@ -74,6 +87,11 @@ export default function DistrictPage() {
     },
   ]
 
+  const handleDelete = (district: District) => {
+    setDistricts(districts.filter(d => d.id !== district.id))
+    setDistrictToDelete(null)
+  }
+
   return (
     <div className="flex h-screen bg-gray-100">
       <SidebarNav />
@@ -91,20 +109,34 @@ export default function DistrictPage() {
             data={districts}
             title="Distritos"
             onAdd={() => {
-              // Add implementation
-              console.log("Add new district")
+              router.push("/catalog/district/add")
             }}
             onEdit={(item: District) => {
-              // Edit implementation
-              console.log("Edit district", item)
+              router.push(`/catalog/district/${item.id}/edit`)
             }}
             onDelete={(item: District) => {
-              // Delete implementation
-              console.log("Delete district", item)
+              setDistrictToDelete(item)
             }}
           />
         </div>
       </div>
+
+      <AlertDialog open={!!districtToDelete} onOpenChange={() => setDistrictToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el distrito "{districtToDelete?.name}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => districtToDelete && handleDelete(districtToDelete)}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

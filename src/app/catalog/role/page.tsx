@@ -1,10 +1,21 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { DataTable } from "@/components/ui/data-table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface Role {
   id: number
@@ -14,6 +25,7 @@ interface Role {
 }
 
 export default function RolePage() {
+  const router = useRouter()
   const [roles, setRoles] = useState<Role[]>([
     {
       id: 1,
@@ -34,6 +46,7 @@ export default function RolePage() {
       createdAt: "2024-03-15",
     }
   ])
+  const [roleToDelete, setRoleToDelete] = useState<Role | null>(null)
 
   const columns = [
     {
@@ -49,6 +62,11 @@ export default function RolePage() {
       accessorKey: "createdAt" as keyof Role,
     },
   ]
+
+  const handleDelete = (role: Role) => {
+    setRoles(roles.filter(r => r.id !== role.id))
+    setRoleToDelete(null)
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -67,20 +85,34 @@ export default function RolePage() {
             data={roles}
             title="Roles / Posiciones"
             onAdd={() => {
-              // Add implementation
-              console.log("Add new role")
+              router.push("/catalog/role/add")
             }}
             onEdit={(item: Role) => {
-              // Edit implementation
-              console.log("Edit role", item)
+              router.push(`/catalog/role/${item.id}/edit`)
             }}
             onDelete={(item: Role) => {
-              // Delete implementation
-              console.log("Delete role", item)
+              setRoleToDelete(item)
             }}
           />
         </div>
       </div>
+
+      <AlertDialog open={!!roleToDelete} onOpenChange={() => setRoleToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el rol "{roleToDelete?.name}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => roleToDelete && handleDelete(roleToDelete)}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 } 

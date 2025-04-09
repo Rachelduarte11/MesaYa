@@ -10,7 +10,6 @@ export function Header() {
         <Input type="text" placeholder="Search Product here..." className="pl-10 w-full" />
       </div>
       <div className="flex items-center gap-2">
-        <span className="font-semibold">Table 4</span>
         <span className="text-gray-500 text-sm">Floyd Miles</span>
       </div>
       <Button variant="ghost" size="icon">
