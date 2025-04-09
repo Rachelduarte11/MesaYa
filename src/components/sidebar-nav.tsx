@@ -35,7 +35,9 @@ export function SidebarNav() {
   }
 
   const navItems = [
-    { icon: Home, label: "Inicio", color: "text-green-600", path: "/" },
+    { icon: Home, label: "Inicio", 
+      color: pathname === "/" ? "text-green-600" : "text-gray-600",  
+      path: "/" },
     {
       icon: ShoppingBag,
       label: "Pedidos",
@@ -68,23 +70,17 @@ export function SidebarNav() {
       path: "/plates" 
     },
     {
-      icon: Menu,
-      label: "Catalogo",
-      color: pathname.startsWith("/catalog") ? "text-green-600" : "text-gray-600",
+      icon:  Settings,
+      label: "Configuración",
+      color: pathname.startsWith("/settings") ? "text-green-600" : "text-gray-600",
       hasSubmenu: true,
-      menuKey: "catalogo",
-      path: "/catalog",
+      menuKey: "settings",
+      path: "/settings",
       submenuItems: [
-        { icon: Receipt, label: "Tipo de Documento", path: "/catalog/document-type" },
-        { icon: Users, label: "Rol / Posición", path: "/catalog/role" },
-        { icon: Home, label: "Distrito", path: "/catalog/district" },
+        { icon: Receipt, label: "Tipo de Documento", path: "/settings/document-type" },
+        { icon: Users, label: "Rol / Posición", path: "/settings/role" },
+        { icon: Home, label: "Distrito", path: "/settings/district" },
       ],
-    },
-    { 
-      icon: Settings, 
-      label: "Configuración", 
-      color: pathname.startsWith("/settings") ? "text-green-600" : "text-gray-600", 
-      path: "/settings" 
     },
   ]
 

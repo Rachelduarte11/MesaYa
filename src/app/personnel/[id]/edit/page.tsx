@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
@@ -32,7 +32,33 @@ const genders = [
   { id: 3, code: "O", name: "Otro" }
 ]
 
-export default function AddClientPage() {
+const roles = [
+  { id: 1, code: "ADMIN", name: "Administrador" },
+  { id: 2, code: "MANAGER", name: "Gerente" },
+  { id: 3, code: "WAITER", name: "Mesero" },
+  { id: 4, code: "KITCHEN", name: "Cocina" },
+  { id: 5, code: "CASHIER", name: "Cajero" }
+]
+
+// Sample personnel data - in a real app, this would come from an API
+const samplePersonnel = {
+  id: 1,
+  documentType: "DNI",
+  documentNumber: "12345678",
+  name: "Juan",
+  lastName: "Pérez",
+  gender: "M",
+  district: "MIR",
+  address: "Av. Arequipa 123",
+  phone: "999888777",
+  email: "juan.perez@example.com",
+  role: "WAITER",
+  salary: "2500",
+  startDate: "2023-01-15",
+  createdAt: "2023-01-15"
+}
+
+export default function EditPersonnelPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [formData, setFormData] = useState({
     documentType: "",
@@ -44,8 +70,33 @@ export default function AddClientPage() {
     address: "",
     phone: "",
     email: "",
+    role: "",
+    salary: "",
+    startDate: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // Simulate API call to fetch personnel data
+    setTimeout(() => {
+      setFormData({
+        documentType: samplePersonnel.documentType,
+        documentNumber: samplePersonnel.documentNumber,
+        name: samplePersonnel.name,
+        lastName: samplePersonnel.lastName,
+        gender: samplePersonnel.gender,
+        district: samplePersonnel.district,
+        address: samplePersonnel.address,
+        phone: samplePersonnel.phone,
+        email: samplePersonnel.email,
+        role: samplePersonnel.role,
+        salary: samplePersonnel.salary,
+        startDate: samplePersonnel.startDate,
+      })
+      setIsLoading(false)
+    }, 500)
+  }, [params.id])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -62,10 +113,24 @@ export default function AddClientPage() {
     
     // Simulate API call
     setTimeout(() => {
-      console.log("Client data submitted:", formData)
+      console.log("Personnel data updated:", formData)
       setIsSubmitting(false)
-      router.push("/clients")
+      router.push("/personnel")
     }, 1000)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-auto p-6 flex items-center justify-center">
+            <p className="text-lg">Cargando datos del personal...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -76,17 +141,17 @@ export default function AddClientPage() {
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Clientes", href: "/clients" }, 
-              { label: "Agregar Cliente" }
+              { label: "Personal", href: "/personnel" }, 
+              { label: "Editar Personal" }
             ]} 
           />
-          <h1 className="text-2xl font-bold mb-6">Agregar Cliente</h1>
+          <h1 className="text-2xl font-bold mb-6">Editar Personal</h1>
           
           <Card>
             <CardHeader>
-              <CardTitle>Información del Cliente</CardTitle>
+              <CardTitle>Información del Personal</CardTitle>
               <CardDescription>
-                Complete los datos del nuevo cliente
+                Modifique los datos del miembro del personal
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
@@ -213,17 +278,58 @@ export default function AddClientPage() {
                       required
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Rol</Label>
+                    <Select 
+                      value={formData.role} 
+                      onValueChange={(value) => handleSelectChange("role", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roles.map((role) => (
+                          <SelectItem key={role.id} value={role.code}>
+                            {role.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="salary">Salario</Label>
+                    <Input
+                      id="salary"
+                      name="salary"
+                      type="number"
+                      value={formData.salary}
+                      onChange={handleChange}
+                      placeholder="Ej: 2500"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate">Fecha de Inicio</Label>
+                    <Input
+                      id="startDate"
+                      name="startDate"
+                      type="date"
+                      value={formData.startDate}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end space-x-2">
                 <Button 
                   variant="outline" 
-                  onClick={() => router.push("/clients")}
+                  onClick={() => router.push("/personnel")}
                 >
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Guardando..." : "Guardar"}
+                  {isSubmitting ? "Guardando..." : "Guardar Cambios"}
                 </Button>
               </CardFooter>
             </form>

@@ -18,7 +18,6 @@ export default function POSPage() {
           </main>
           <Cart />
         </div>
-        <Footer />
       </div>
     </div>
   )

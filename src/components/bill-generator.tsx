@@ -110,7 +110,7 @@ export function BillGenerator({
             <Label>Order Items</Label>
             <div className="border rounded-md mt-2">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-white">
                   <tr>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Item</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Qty</th>
@@ -118,7 +118,7 @@ export function BillGenerator({
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Total</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y">
+                <tbody className="divide-y bg-white">
                   {billData.items.map((item, index) => (
                     <tr key={index}>
                       <td className="px-4 py-2 text-sm">{item.name}</td>

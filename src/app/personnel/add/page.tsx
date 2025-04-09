@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { PlusCircle } from "lucide-react"
 
 // Sample data for dropdowns
 const documentTypes = [
@@ -32,7 +33,15 @@ const genders = [
   { id: 3, code: "O", name: "Otro" }
 ]
 
-export default function AddClientPage() {
+const roles = [
+  { id: 1, code: "ADMIN", name: "Administrador" },
+  { id: 2, code: "MANAGER", name: "Gerente" },
+  { id: 3, code: "WAITER", name: "Mesero" },
+  { id: 4, code: "KITCHEN", name: "Cocina" },
+  { id: 5, code: "CASHIER", name: "Cajero" }
+]
+
+export default function AddPersonnelPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
     documentType: "",
@@ -44,6 +53,9 @@ export default function AddClientPage() {
     address: "",
     phone: "",
     email: "",
+    role: "",
+    salary: "",
+    startDate: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -62,10 +74,29 @@ export default function AddClientPage() {
     
     // Simulate API call
     setTimeout(() => {
-      console.log("Client data submitted:", formData)
+      console.log("Personnel data submitted:", formData)
       setIsSubmitting(false)
-      router.push("/clients")
+      router.push("/personnel")
     }, 1000)
+  }
+
+  const handleAddNew = (type: string) => {
+    switch (type) {
+      case "documentType":
+        router.push("/catalog/document-type/add")
+        break
+      case "district":
+        router.push("/catalog/district/add")
+        break
+      case "gender":
+        router.push("/catalog/gender/add")
+        break
+      case "role":
+        router.push("/catalog/role/add")
+        break
+      default:
+        break
+    }
   }
 
   return (
@@ -76,51 +107,22 @@ export default function AddClientPage() {
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Clientes", href: "/clients" }, 
-              { label: "Agregar Cliente" }
+              { label: "Personal", href: "/personnel" }, 
+              { label: "Agregar Personal" }
             ]} 
           />
-          <h1 className="text-2xl font-bold mb-6">Agregar Cliente</h1>
+          <h1 className="text-2xl font-bold mb-6">Agregar Personal</h1>
           
           <Card>
             <CardHeader>
-              <CardTitle>Información del Cliente</CardTitle>
+              <CardTitle>Información del Personal</CardTitle>
               <CardDescription>
-                Complete los datos del nuevo cliente
+                Complete los datos del nuevo miembro del personal
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="documentType">Tipo de Documento</Label>
-                    <Select 
-                      value={formData.documentType} 
-                      onValueChange={(value) => handleSelectChange("documentType", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione tipo de documento" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {documentTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.code}>
-                            {type.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="documentNumber">Número de Documento</Label>
-                    <Input
-                      id="documentNumber"
-                      name="documentNumber"
-                      value={formData.documentNumber}
-                      onChange={handleChange}
-                      placeholder="Ej: 12345678"
-                      required
-                    />
-                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="name">Nombre</Label>
                     <Input
@@ -143,6 +145,45 @@ export default function AddClientPage() {
                       required
                     />
                   </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="documentType">Tipo de Documento</Label>
+                    <Select 
+                      value={formData.documentType} 
+                      onValueChange={(value) => handleSelectChange("documentType", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione tipo de documento" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {documentTypes.map((type) => (
+                          <SelectItem key={type.id} value={type.code}>
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                        <SelectItem 
+                          value="add-new" 
+                          className="flex items-center justify-between cursor-pointer"
+                          onSelect={() => handleAddNew("documentType")}
+                        >
+                          <span>Agregar nuevo tipo de documento</span>
+                          <PlusCircle className="h-4 w-4 ml-2" />
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="documentNumber">Número de Documento</Label>
+                    <Input
+                      id="documentNumber"
+                      name="documentNumber"
+                      value={formData.documentNumber}
+                      onChange={handleChange}
+                      placeholder="Ej: 12345678"
+                      required
+                    />
+                  </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="gender">Género</Label>
                     <Select 
@@ -158,6 +199,14 @@ export default function AddClientPage() {
                             {gender.name}
                           </SelectItem>
                         ))}
+                        <SelectItem 
+                          value="add-new" 
+                          className="flex items-center justify-between cursor-pointer"
+                          onSelect={() => handleAddNew("gender")}
+                        >
+                          <span>Agregar nuevo género</span>
+                          <PlusCircle className="h-4 w-4 ml-2" />
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -176,9 +225,18 @@ export default function AddClientPage() {
                             {district.name}
                           </SelectItem>
                         ))}
+                        <SelectItem 
+                          value="add-new" 
+                          className="flex items-center justify-between cursor-pointer"
+                          onSelect={() => handleAddNew("district")}
+                        >
+                          <span>Agregar nuevo distrito</span>
+                          <PlusCircle className="h-4 w-4 ml-2" />
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                  
                   <div className="space-y-2 col-span-2">
                     <Label htmlFor="address">Dirección</Label>
                     <Input
@@ -190,6 +248,7 @@ export default function AddClientPage() {
                       required
                     />
                   </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="phone">Teléfono</Label>
                     <Input
@@ -213,16 +272,69 @@ export default function AddClientPage() {
                       required
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Rol</Label>
+                    <Select 
+                      value={formData.role} 
+                      onValueChange={(value) => handleSelectChange("role", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roles.map((role) => (
+                          <SelectItem key={role.id} value={role.code}>
+                            {role.name}
+                          </SelectItem>
+                        ))}
+                        <SelectItem 
+                          value="add-new" 
+                          className="flex items-center justify-between cursor-pointer"
+                          onSelect={() => handleAddNew("role")}
+                        >
+                          <span>Agregar nuevo rol</span>
+                          <PlusCircle className="h-4 w-4 ml-2" />
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="salary">Salario</Label>
+                    <Input
+                      id="salary"
+                      name="salary"
+                      type="number"
+                      value={formData.salary}
+                      onChange={handleChange}
+                      placeholder="Ej: 2500"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate">Fecha de Inicio</Label>
+                    <Input
+                      id="startDate"
+                      name="startDate"
+                      type="date"
+                      value={formData.startDate}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-end space-x-2">
+              <CardFooter className="flex justify-between">
                 <Button 
+                  type="button" 
                   variant="outline" 
-                  onClick={() => router.push("/clients")}
+                  onClick={() => router.push("/personnel")}
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? "Guardando..." : "Guardar"}
                 </Button>
               </CardFooter>
