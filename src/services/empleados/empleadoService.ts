@@ -33,4 +33,6 @@ export const empleadoService = {
     });
     return response.data;
   }
-}; 
+};
+
+export default empleadoService; 

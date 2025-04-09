@@ -99,4 +99,47 @@ export interface UpdateClienteRequest extends Partial<CreateClienteRequest> {
   id: string;
 }
 
+// Pedido (Order) types
+export interface Pedido {
+  codigo: number;
+  estado: number;
+  nombre: string;
+  fecha: string;
+  estado_pedido: string;
+  total: number;
+  cliente_id: number;
+  empleado_id: number;
+  cliente?: {
+    id: number;
+    nombre: string;
+    apellido: string;
+  };
+  empleado?: {
+    codigo: number;
+    nombre: string;
+    apellidoPaterno: string;
+  };
+}
+
+export interface CreatePedidoRequest {
+  estado: number;
+  nombre: string;
+  fecha: string;
+  estado_pedido: string;
+  total: number;
+  cliente_id: number;
+  empleado_id: number;
+}
+
+export interface UpdatePedidoRequest {
+  codigo: number;
+  estado?: number;
+  nombre?: string;
+  fecha?: string;
+  estado_pedido?: string;
+  total?: number;
+  cliente_id?: number;
+  empleado_id?: number;
+}
+
 // Add more types as needed for your specific API endpoints 

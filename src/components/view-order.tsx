@@ -11,10 +11,14 @@ import { useRouter } from "next/navigation"
 
 interface Order {
   id: string
-  clientName: string
+  estado: number
+  nombre: string
+  fecha: string
+  estado_pedido: string
   total: number
-  status: 'pending' | 'completed' | 'cancelled'
-  createdAt: string
+  cliente_id: number
+  empleado_id: number
+  clientName: string
   itemCount: number
   formattedDate?: string
 }
@@ -29,42 +33,62 @@ export function ViewOrder() {
   const mockOrders: Order[] = [
     {
       id: 'order-1',
-      clientName: 'John Doe',
+      estado: 1,
+      nombre: 'Pedido 001',
+      fecha: '2024-03-15T10:30:00Z',
+      estado_pedido: 'Entregado',
       total: 45.97,
-      status: 'completed',
-      createdAt: '2024-03-15T10:30:00Z',
+      cliente_id: 1,
+      empleado_id: 1,
+      clientName: 'John Doe',
       itemCount: 3,
     },
     {
       id: 'order-2',
-      clientName: 'Jane Smith',
+      estado: 1,
+      nombre: 'Pedido 002',
+      fecha: '2024-03-15T11:45:00Z',
+      estado_pedido: 'Pendiente',
       total: 32.50,
-      status: 'pending',
-      createdAt: '2024-03-15T11:45:00Z',
+      cliente_id: 2,
+      empleado_id: 2,
+      clientName: 'Jane Smith',
       itemCount: 2,
     },
     {
       id: 'order-3',
-      clientName: 'Bob Johnson',
+      estado: 0,
+      nombre: 'Pedido 003',
+      fecha: '2024-03-15T12:15:00Z',
+      estado_pedido: 'Cancelado',
       total: 28.99,
-      status: 'cancelled',
-      createdAt: '2024-03-15T12:15:00Z',
+      cliente_id: 3,
+      empleado_id: 3,
+      clientName: 'Bob Johnson',
       itemCount: 1,
     },
     {
       id: 'order-4',
-      clientName: 'Alice Brown',
+      estado: 1,
+      nombre: 'Pedido 004',
+      fecha: '2024-03-15T13:20:00Z',
+      estado_pedido: 'Entregado',
       total: 65.75,
-      status: 'completed',
-      createdAt: '2024-03-15T13:20:00Z',
+      cliente_id: 4,
+      empleado_id: 1,
+      clientName: 'Alice Brown',
       itemCount: 4,
     },
     {
       id: 'order-5',
-      clientName: 'Charlie Davis',
+      estado: 1,
+      nombre: 'Pedido 005',
+      fecha: '2024-03-15T14:10:00Z',
+      estado_pedido: 'Pendiente',
       total: 42.25,
-      status: 'pending',
-      createdAt: '2024-03-15T14:10:00Z',
+      cliente_id: 5,
+      empleado_id: 2,
+      clientName: 'Charlie Davis',
       itemCount: 3,
     },
   ]
@@ -73,7 +97,7 @@ export function ViewOrder() {
   useEffect(() => {
     const formatted = mockOrders.map(order => ({
       ...order,
-      formattedDate: new Date(order.createdAt).toLocaleDateString()
+      formattedDate: new Date(order.fecha).toLocaleDateString()
     }))
     setFormattedOrders(formatted)
     setIsClient(true)
@@ -81,19 +105,20 @@ export function ViewOrder() {
 
   const filteredOrders = formattedOrders.filter(
     (order) =>
+      order.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.id.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const getStatusBadge = (status: Order['status']) => {
+  const getStatusBadge = (status: string) => {
     const statusColors = {
-      pending: 'bg-yellow-500',
-      completed: 'bg-green-500',
-      cancelled: 'bg-red-500',
+      'Pendiente': 'bg-yellow-500',
+      'Entregado': 'bg-green-500',
+      'Cancelado': 'bg-red-500',
     }
     return (
-      <Badge className={statusColors[status]}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+      <Badge className={statusColors[status as keyof typeof statusColors] || 'bg-gray-500'}>
+        {status}
       </Badge>
     )
   }
@@ -116,12 +141,14 @@ export function ViewOrder() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Order ID</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Items</TableHead>
+                <TableHead>ID</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Estado Pedido</TableHead>
                 <TableHead>Total</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Cliente ID</TableHead>
+                <TableHead>Empleado ID</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -129,11 +156,13 @@ export function ViewOrder() {
               {filteredOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell>{order.id}</TableCell>
-                  <TableCell>{order.clientName}</TableCell>
+                  <TableCell>{order.estado === 1 ? "Activo" : "Inactivo"}</TableCell>
+                  <TableCell>{order.nombre}</TableCell>
                   <TableCell>{order.formattedDate}</TableCell>
-                  <TableCell>{order.itemCount}</TableCell>
+                  <TableCell>{getStatusBadge(order.estado_pedido)}</TableCell>
                   <TableCell>${order.total.toFixed(2)}</TableCell>
-                  <TableCell>{getStatusBadge(order.status)}</TableCell>
+                  <TableCell>{order.cliente_id}</TableCell>
+                  <TableCell>{order.empleado_id}</TableCell>
                   <TableCell className="text-right">
                     <Button
                       variant="outline"
