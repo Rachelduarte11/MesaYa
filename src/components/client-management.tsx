@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -34,31 +34,35 @@ export function ClientManagement({
   onSearch, 
   onDelete 
 }: ClientManagementProps) {
-  console.log('ClientManagement rendered with clients:', clients);
-  console.log('Loading state:', loading);
-  console.log('Error state:', error);
-
+  console.log('ClientManagement: Received props:', { clients, loading, error });
+  
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Cliente | null>(null)
 
-  // Debug breakpoint condition: clients is undefined or null
-  // Right-click here and add conditional breakpoint: clients === undefined || clients === null
+  useEffect(() => {
+    console.log('ClientManagement: Clients updated:', clients);
+  }, [clients]);
+
   const handleSearch = (term: string) => {
-    onSearch(term)
+    console.log('ClientManagement: Handling search with term:', term);
+    setSearchTerm(term);
+    onSearch(term);
   }
 
   const handleDelete = async (clientId: string) => {
+    console.log('ClientManagement: Handling delete for client ID:', clientId);
     try {
-      await onDelete(clientId)
-      setSelectedClient(null)
+      await onDelete(clientId);
+      setSelectedClient(null);
     } catch (err) {
-      console.error('Error al eliminar el cliente:', err)
+      console.error('ClientManagement: Error in handleDelete:', err);
+      // Error is already handled by the parent component
     }
   }
 
   if (loading && !clients.length) {
+    console.log('ClientManagement: Showing loading state');
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -67,12 +71,15 @@ export function ClientManagement({
   }
 
   if (error) {
+    console.log('ClientManagement: Showing error state:', error);
     return (
       <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
         {error}
       </div>
     )
   }
+
+  console.log('ClientManagement: Rendering with clients:', clients);
 
   return (
     <div className="space-y-6">
@@ -121,16 +128,14 @@ export function ClientManagement({
                   <TableCell>{client.email}</TableCell>
                   <TableCell>{client.telefono}</TableCell>
                   <TableCell>
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        client.estado === 'activo'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {client.estado}
-                    </span>
-                  </TableCell>
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    client.estado 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {client.estado ? 'Activo' : 'Inactivo'}
+                  </span>
+                </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
                       <Button 

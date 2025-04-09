@@ -1,260 +1,167 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Edit, Trash2, BadgeCheck, UserPlus2, ChevronLeft, ChevronRight } from "lucide-react"
-
-// Sample employee data
-const initialEmployees = [
-  {
-    id: 1,
-    name: "Maria Rodriguez",
-    position: "Waitstaff",
-    documentType: "DNI",
-    documentNumber: "12345678",
-    gender: "F",
-    district: "Miraflores",
-    phone: "555-111-2222",
-    email: "maria@chilipos.com",
-    startDate: "2024-01-15",
-    status: "Active",
-  },
-  {
-    id: 2,
-    name: "John Smith",
-    position: "Chef",
-    documentType: "CE",
-    documentNumber: "87654321",
-    gender: "M",
-    district: "San Isidro",
-    phone: "555-333-4444",
-    email: "john@chilipos.com",
-    startDate: "2023-11-05",
-    status: "Active",
-  },
-  {
-    id: 3,
-    name: "Sarah Johnson",
-    position: "Manager",
-    documentType: "DNI",
-    documentNumber: "11223344",
-    gender: "F",
-    district: "Barranco",
-    phone: "555-555-6666",
-    email: "sarah@chilipos.com",
-    startDate: "2023-08-20",
-    status: "Active",
-  },
-  {
-    id: 4,
-    name: "David Lee",
-    position: "Bartender",
-    documentType: "DNI",
-    documentNumber: "99887766",
-    gender: "M",
-    district: "Surco",
-    phone: "555-777-8888",
-    email: "david@chilipos.com",
-    startDate: "2024-02-10",
-    status: "Active",
-  },
-  // Adding more sample data to demonstrate pagination
-  {
-    id: 5,
-    name: "Emily Brown",
-    position: "Hostess",
-    documentType: "CE",
-    documentNumber: "55443322",
-    gender: "F",
-    district: "La Molina",
-    phone: "555-999-0000",
-    email: "emily@chilipos.com",
-    startDate: "2024-01-20",
-    status: "Active",
-  },
-  {
-    id: 6,
-    name: "Michael Wilson",
-    position: "Sous Chef",
-    documentType: "DNI",
-    documentNumber: "11223355",
-    gender: "M",
-    district: "San Borja",
-    phone: "555-222-3333",
-    email: "michael@chilipos.com",
-    startDate: "2023-10-15",
-    status: "Active",
-  },
-  {
-    id: 7,
-    name: "Jessica Davis",
-    position: "Waitstaff",
-    documentType: "PAS",
-    documentNumber: "AB123456",
-    gender: "F",
-    district: "Miraflores",
-    phone: "555-444-5555",
-    email: "jessica@chilipos.com",
-    startDate: "2024-02-05",
-    status: "Active",
-  },
-  {
-    id: 8,
-    name: "Robert Taylor",
-    position: "Line Cook",
-    documentType: "DNI",
-    documentNumber: "66778899",
-    gender: "M",
-    district: "San Isidro",
-    phone: "555-666-7777",
-    email: "robert@chilipos.com",
-    startDate: "2023-12-10",
-    status: "Active",
-  },
-  {
-    id: 9,
-    name: "Amanda Martinez",
-    position: "Cashier",
-    documentType: "CE",
-    documentNumber: "11223366",
-    gender: "F",
-    district: "Barranco",
-    phone: "555-888-9999",
-    email: "amanda@chilipos.com",
-    startDate: "2024-01-25",
-    status: "Active",
-  },
-  {
-    id: 10,
-    name: "Daniel Anderson",
-    position: "Dishwasher",
-    documentType: "DNI",
-    documentNumber: "44556677",
-    gender: "M",
-    district: "Surco",
-    phone: "555-000-1111",
-    email: "daniel@chilipos.com",
-    startDate: "2024-02-15",
-    status: "Active",
-  }
-]
+import { Search, Edit, Trash2, UserPlus2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import { useEmployeeManagement } from "@/hooks/useEmployeeManagement"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useState } from "react"
+import { Empleado } from "@/services/api/types"
 
 export function EmployeeManagement() {
   const router = useRouter()
-  const [employees, setEmployees] = useState(initialEmployees)
   const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedEmployee, setSelectedEmployee] = useState<Empleado | null>(null)
 
-  const filteredEmployees = employees.filter(
-    (employee) =>
-      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.phone.includes(searchTerm) ||
-      employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.documentNumber.includes(searchTerm)
-  )
+  const {
+    employees,
+    loading,
+    error,
+    currentPage,
+    totalPages,
+    fetchEmployees,
+    handleSearch,
+    handleDelete,
+    handlePageChange,
+  } = useEmployeeManagement()
 
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const currentEmployees = filteredEmployees.slice(startIndex, endIndex)
+  useEffect(() => {
+    fetchEmployees()
+  }, [fetchEmployees])
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term)
+    handleSearch(term)
+  }
+
+  const handleDeleteClick = (employee: Empleado) => {
+    setSelectedEmployee(employee)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (selectedEmployee) {
+      try {
+        await handleDelete(selectedEmployee.codigo)
+        setIsDeleteModalOpen(false)
+        setSelectedEmployee(null)
+      } catch (err) {
+        console.error('Error deleting employee:', err)
+      }
+    }
+  }
+
+  if (loading && !employees.length) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        {error}
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="relative w-1/3">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Search employees..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value)
-              setCurrentPage(1) // Reset to first page when searching
-            }}
-          />
+    <Card>
+      <CardHeader>
+        <CardTitle>Gestión de Empleados</CardTitle>
+        <CardDescription>
+          Administra los empleados del restaurante
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-between items-center mb-4">
+          <div className="relative w-64">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="Buscar empleados..."
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Button onClick={() => router.push("/staff/add")}>
+            <UserPlus2 className="mr-2 h-4 w-4" />
+            Nuevo Empleado
+          </Button>
         </div>
 
-        <Button 
-          className="bg-green-600 hover:bg-green-700"
-          onClick={() => router.push("/staff/add")}
-        >
-          <UserPlus2 className="mr-2 h-4 w-4" /> Add New Employee
-        </Button>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <div>
-            <CardTitle>Employee Database</CardTitle>
-            <CardDescription>Manage your restaurant staff</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Document Type</TableHead>
-                <TableHead>Document Number</TableHead>
-                <TableHead>Position</TableHead>
-                <TableHead>Gender</TableHead>
-                <TableHead>District</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Start Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nombre Completo</TableHead>
+              <TableHead>Documento</TableHead>
+              <TableHead>Teléfono</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Sueldo</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {employees.map((employee) => (
+              <TableRow key={employee.codigo}>
+                <TableCell>
+                  {employee.nombre} {employee.apellidoPaterno} {employee.apellidoMaterno}
+                </TableCell>
+                <TableCell>{employee.documento}</TableCell>
+                <TableCell>{employee.telefono}</TableCell>
+                <TableCell>{employee.email}</TableCell>
+                <TableCell>S/. {employee.sueldo.toFixed(2)}</TableCell>
+                <TableCell>
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    employee.estado 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {employee.estado ? 'Activo' : 'Inactivo'}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => router.push(`/staff/${employee.codigo}/edit`)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteClick(employee)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentEmployees.map((employee) => (
-                <TableRow key={employee.id}>
-                  <TableCell className="font-medium">{employee.name}</TableCell>
-                  <TableCell>{employee.documentType}</TableCell>
-                  <TableCell>{employee.documentNumber}</TableCell>
-                  <TableCell>{employee.position}</TableCell>
-                  <TableCell>{employee.gender}</TableCell>
-                  <TableCell>{employee.district}</TableCell>
-                  <TableCell>{employee.phone}</TableCell>
-                  <TableCell>{employee.email}</TableCell>
-                  <TableCell>{employee.startDate}</TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {employee.status}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="icon">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="icon">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-        <CardFooter className="flex justify-between items-center">
-          <div className="text-sm text-gray-500">
-            Showing {startIndex + 1}-{Math.min(endIndex, filteredEmployees.length)} of {filteredEmployees.length} employees
-          </div>
-          <div className="flex items-center space-x-2">
+            ))}
+          </TableBody>
+        </Table>
+
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center mt-4 space-x-2">
             <Button
               variant="outline"
               size="sm"
@@ -263,19 +170,9 @@ export function EmployeeManagement() {
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <div className="flex items-center space-x-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handlePageChange(page)}
-                  className="w-8 h-8 p-0"
-                >
-                  {page}
-                </Button>
-              ))}
-            </div>
+            <span className="text-sm">
+              Página {currentPage} de {totalPages}
+            </span>
             <Button
               variant="outline"
               size="sm"
@@ -285,9 +182,26 @@ export function EmployeeManagement() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </CardFooter>
-      </Card>
-    </div>
+        )}
+      </CardContent>
+
+      <AlertDialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el empleado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Card>
   )
 }
 

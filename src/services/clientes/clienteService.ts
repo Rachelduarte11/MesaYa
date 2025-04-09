@@ -10,45 +10,87 @@ import {
 export const clienteService = {
   // Get all clientes
   async getAll(): Promise<Cliente[]> {
-    const response = await api.get<Cliente[]>(API_ENDPOINTS.clientes.list);
-    return response.data;
+    console.log('Fetching all clients from API...');
+    try {
+      const response = await api.get<Cliente[]>(API_ENDPOINTS.clientes.list);
+      console.log('API Response for getAll:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error in getAll:', error);
+      throw error;
+    }
   },
 
   // Get cliente by ID
   async getById(id: string): Promise<Cliente> {
-    const response = await api.get<Cliente>(API_ENDPOINTS.clientes.detail(id));
-    return response.data;
+    console.log(`Fetching client with ID: ${id}`);
+    try {
+      const response = await api.get<Cliente>(API_ENDPOINTS.clientes.detail(id));
+      console.log('API Response for getById:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error in getById:', error);
+      throw error;
+    }
   },
 
   // Create new cliente
   async create(cliente: CreateClienteRequest): Promise<Cliente> {
-    const response = await api.post<Cliente>(
-      API_ENDPOINTS.clientes.create,
-      cliente
-    );
-    return response.data;
+    console.log('Creating new client:', cliente);
+    try {
+      const response = await api.post<Cliente>(
+        API_ENDPOINTS.clientes.create,
+        cliente
+      );
+      console.log('API Response for create:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error in create:', error);
+      throw error;
+    }
   },
 
   // Update cliente
   async update(cliente: UpdateClienteRequest): Promise<Cliente> {
-    const response = await api.put<Cliente>(
-      API_ENDPOINTS.clientes.update(cliente.id),
-      cliente
-    );
-    return response.data;
+    console.log('Updating client:', cliente);
+    try {
+      const response = await api.put<Cliente>(
+        API_ENDPOINTS.clientes.update(cliente.id),
+        cliente
+      );
+      console.log('API Response for update:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error in update:', error);
+      throw error;
+    }
   },
 
   // Delete cliente
   async delete(id: string): Promise<void> {
-    await api.delete(API_ENDPOINTS.clientes.delete(id));
+    console.log(`Deleting client with ID: ${id}`);
+    try {
+      await api.delete(API_ENDPOINTS.clientes.delete(id));
+      console.log('Client deleted successfully');
+    } catch (error) {
+      console.error('Error in delete:', error);
+      throw error;
+    }
   },
 
   // Search clientes
   async search(query: string): Promise<Cliente[]> {
-    const response = await api.get<Cliente[]>(API_ENDPOINTS.clientes.search, {
-      params: { query }
-    });
-    return response.data;
+    console.log('Searching clients with query:', query);
+    try {
+      const response = await api.get<Cliente[]>(API_ENDPOINTS.clientes.search, {
+        params: { query }
+      });
+      console.log('API Response for search:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error in search:', error);
+      throw error;
+    }
   },
 };
 

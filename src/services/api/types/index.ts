@@ -55,7 +55,18 @@ export interface Empleado {
   direccion: string;
   telefono: string;
   email: string;
+  fechaNacimiento: string;
   estado: boolean;
+  sueldo: number;
+  tipoDocumento: {
+    codigo: number;
+  };
+  rol: {
+    codigo: number;
+  };
+  distrito: {
+    codigo: number;
+  };
 }
 
 export interface CreateEmpleadoRequest {

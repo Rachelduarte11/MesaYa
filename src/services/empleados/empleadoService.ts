@@ -4,31 +4,31 @@ import API_ENDPOINTS from '../api/config/endpoints';
 
 export const empleadoService = {
   getAll: async (): Promise<Empleado[]> => {
-    const response = await api.get<Empleado[]>(API_ENDPOINTS.empleados.list);
+    const response = await api.get(API_ENDPOINTS.empleados.list);
     return response.data;
   },
 
-  getById: async (id: number): Promise<Empleado> => {
-    const response = await api.get<Empleado>(API_ENDPOINTS.empleados.detail(id.toString()));
+  getById: async (id: string): Promise<Empleado> => {
+    const response = await api.get(API_ENDPOINTS.empleados.detail(id));
     return response.data;
   },
 
   create: async (data: CreateEmpleadoRequest): Promise<Empleado> => {
-    const response = await api.post<Empleado>(API_ENDPOINTS.empleados.create, data);
+    const response = await api.post(API_ENDPOINTS.empleados.create, data);
     return response.data;
   },
 
-  update: async (data: UpdateEmpleadoRequest): Promise<Empleado> => {
-    const response = await api.put<Empleado>(API_ENDPOINTS.empleados.update(data.codigo.toString()), data);
+  update: async (id: string, data: UpdateEmpleadoRequest): Promise<Empleado> => {
+    const response = await api.put(API_ENDPOINTS.empleados.update(id), data);
     return response.data;
   },
 
-  delete: async (id: number): Promise<void> => {
-    await api.delete(API_ENDPOINTS.empleados.delete(id.toString()));
+  delete: async (id: string): Promise<void> => {
+    await api.delete(API_ENDPOINTS.empleados.delete(id));
   },
 
   search: async (query: string): Promise<Empleado[]> => {
-    const response = await api.get<Empleado[]>(API_ENDPOINTS.empleados.search, {
+    const response = await api.get(API_ENDPOINTS.empleados.search, {
       params: { query }
     });
     return response.data;
