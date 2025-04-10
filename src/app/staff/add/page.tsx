@@ -64,7 +64,12 @@ export default function AddStaffPage() {
     direccion: "",
     telefono: "",
     email: "",
-    estado: true
+    estado: true,
+    fechaNacimiento: "",
+    sueldo: 0,
+    tipoDocumento: { codigo: 0 },
+    rol: { codigo: 0 },
+    distrito: { codigo: 0 }
   })
 
   // Modal state
@@ -88,11 +93,18 @@ export default function AddStaffPage() {
     }))
   }
 
-  const handleSelectChange = (name: keyof CreateEmpleadoRequest, value: string | boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+  const handleSelectChange = (name: keyof CreateEmpleadoRequest, value: string) => {
+    if (name === "tipoDocumento" || name === "rol" || name === "distrito") {
+      setFormData(prev => ({
+        ...prev,
+        [name]: { codigo: parseInt(value) }
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -193,6 +205,36 @@ export default function AddStaffPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
+                    <Label htmlFor="tipoDocumento">Tipo de Documento</Label>
+                    <Select
+                      value={formData.tipoDocumento.codigo.toString()}
+                      onValueChange={(value) => handleSelectChange("tipoDocumento", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione tipo de documento" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {documentTypes.map((type) => (
+                          <SelectItem key={type.id} value={type.id.toString()}>
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="documento">Documento</Label>
+                    <Input
+                      id="documento"
+                      name="documento"
+                      value={formData.documento}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="nombre">Nombre</Label>
                     <Input
                       id="nombre"
@@ -221,16 +263,16 @@ export default function AddStaffPage() {
                       name="apellidoMaterno"
                       value={formData.apellidoMaterno}
                       onChange={handleChange}
-                      required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="documento">Documento</Label>
+                    <Label htmlFor="fechaNacimiento">Fecha de Nacimiento</Label>
                     <Input
-                      id="documento"
-                      name="documento"
-                      value={formData.documento}
+                      id="fechaNacimiento"
+                      name="fechaNacimiento"
+                      type="date"
+                      value={formData.fechaNacimiento}
                       onChange={handleChange}
                       required
                     />
@@ -271,10 +313,60 @@ export default function AddStaffPage() {
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="distrito">Distrito</Label>
+                    <Select
+                      value={formData.distrito.codigo.toString()}
+                      onValueChange={(value) => handleSelectChange("distrito", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione distrito" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {districts.map((district) => (
+                          <SelectItem key={district.id} value={district.id.toString()}>
+                            {district.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="rol">Rol</Label>
+                    <Select
+                      value={formData.rol.codigo.toString()}
+                      onValueChange={(value) => handleSelectChange("rol", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roles.map((role) => (
+                          <SelectItem key={role.id} value={role.id.toString()}>
+                            {role.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="sueldo">Sueldo</Label>
+                    <Input
+                      id="sueldo"
+                      name="sueldo"
+                      type="number"
+                      value={formData.sueldo}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="estado">Estado</Label>
                     <Select
                       value={formData.estado ? "activo" : "inactivo"}
-                      onValueChange={(value) => handleSelectChange("estado", value === "activo")}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, estado: value === "activo" }))}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione estado" />

@@ -31,7 +31,7 @@ export const useClientManagement = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await clienteService.getById(id);
+      const response = await clienteService.getByCodigo(id);
       console.log('useClientManagement: Received client data:', response);
       setCurrentClient(response);
     } catch (err) {
@@ -70,7 +70,7 @@ export const useClientManagement = () => {
       const response = await clienteService.update(clientData);
       console.log('useClientManagement: Updated client:', response);
       setClients((prev) =>
-        prev.map((client) => (client.id === clientData.id ? response : client))
+        prev.map((client) => (client.codigo === clientData.codigo ? response : client))
       );
       setCurrentClient(response);
       return response;
@@ -91,8 +91,8 @@ export const useClientManagement = () => {
     try {
       await clienteService.delete(id);
       console.log('useClientManagement: Deleted client with ID:', id);
-      setClients((prev) => prev.filter((client) => client.id !== id));
-      if (currentClient?.id === id) {
+      setClients((prev) => prev.filter((client) => client.codigo !== id));
+      if (currentClient?.codigo === id) {
         setCurrentClient(null);
       }
     } catch (err) {

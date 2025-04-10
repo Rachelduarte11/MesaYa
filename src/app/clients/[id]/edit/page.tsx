@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { clienteService } from "@/services/clientes/clienteService"
 
 // Sample client data
 const sampleClients = [
@@ -59,6 +60,8 @@ export default function EditClientPage({ params }: { params: Promise<{ id: strin
     estado: true
   })
 
+  const [error, setError] = useState("")
+
   useEffect(() => {
     // In a real app, this would be an API call
     const client = sampleClients.find(c => c.id === clientId)
@@ -71,14 +74,16 @@ export default function EditClientPage({ params }: { params: Promise<{ id: strin
     }
   }, [clientId, router])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // In a real app, this would be an API call to update the client
-    console.log("Updating client:", formData)
-    
-    // Redirect back to clients page
-    router.push("/clients")
+    try {
+      await clienteService.update(formData)
+      router.push("/clients")
+    } catch (err) {
+      console.error("Error updating client:", err)
+      setError("Error al actualizar el cliente. Por favor, intente nuevamente.")
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

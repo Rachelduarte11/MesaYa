@@ -13,15 +13,19 @@ export function useEmployeeManagement() {
     try {
       setLoading(true);
       setError(null);
+      console.log('Fetching employees...');
       const response = await empleadoService.getAll();
+      console.log('Employees response:', response);
       if (response) {
         setEmployees(response);
       } else {
+        console.error('No response data received');
         setError('No se pudieron cargar los empleados');
         setEmployees([]);
       }
     } catch (err) {
-      setError('Error al cargar los empleados');
+      console.error('Error fetching employees:', err);
+      setError('Error al cargar los empleados: ' + (err instanceof Error ? err.message : 'Error desconocido'));
       setEmployees([]);
     } finally {
       setLoading(false);
@@ -57,7 +61,7 @@ export function useEmployeeManagement() {
       setLoading(true);
       setError(null);
       await empleadoService.delete(codigo.toString());
-      setEmployees(prev => prev.filter(emp => emp.codigo !== codigo));
+      setEmployees(prev => prev.filter(emp => Number(emp.codigo) !== codigo));
     } catch (err) {
       setError('Error al eliminar el empleado');
       throw err;

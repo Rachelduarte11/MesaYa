@@ -121,9 +121,9 @@ export function ClientManagement({
             </TableHeader>
             <TableBody>
               {clients.map((client) => (
-                <TableRow key={client.id}>
+                <TableRow key={client.codigo}>
                   <TableCell className="font-medium">
-                    {client.nombre} {client.apellido}
+                    {client.nombre} {client.apellidoPaterno}
                   </TableCell>
                   <TableCell>{client.email}</TableCell>
                   <TableCell>{client.telefono}</TableCell>
@@ -141,7 +141,7 @@ export function ClientManagement({
                       <Button 
                         variant="outline" 
                         size="icon"
-                        onClick={() => router.push(`/clients/${client.id}/edit`)}
+                        onClick={() => router.push(`/clients/${client.codigo}/edit`)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -178,7 +178,7 @@ export function ClientManagement({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={() => selectedClient && handleDelete(selectedClient.id)}
+              onClick={() => selectedClient && handleDelete(selectedClient.codigo)}
               className="bg-red-600 hover:bg-red-700"
             >
               Eliminar

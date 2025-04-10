@@ -56,7 +56,7 @@ export function EmployeeManagement() {
   const handleConfirmDelete = async () => {
     if (selectedEmployee) {
       try {
-        await handleDelete(selectedEmployee.codigo)
+        await handleDelete(Number(selectedEmployee.codigo))
         setIsDeleteModalOpen(false)
         setSelectedEmployee(null)
       } catch (err) {

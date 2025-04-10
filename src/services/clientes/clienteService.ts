@@ -21,15 +21,15 @@ export const clienteService = {
     }
   },
 
-  // Get cliente by ID
-  async getById(id: string): Promise<Cliente> {
-    console.log(`Fetching client with ID: ${id}`);
+  // Get cliente by codigo
+  async getByCodigo(codigo: string): Promise<Cliente> {
+    console.log(`Fetching client with codigo: ${codigo}`);
     try {
-      const response = await api.get<Cliente>(API_ENDPOINTS.clientes.detail(id));
-      console.log('API Response for getById:', response.data);
+      const response = await api.get<Cliente>(API_ENDPOINTS.clientes.detail(codigo));
+      console.log('API Response for getByCodigo:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Error in getById:', error);
+      console.error('Error in getByCodigo:', error);
       throw error;
     }
   },
@@ -55,7 +55,7 @@ export const clienteService = {
     console.log('Updating client:', cliente);
     try {
       const response = await api.put<Cliente>(
-        API_ENDPOINTS.clientes.update(cliente.id),
+        API_ENDPOINTS.clientes.update(cliente.codigo),
         cliente
       );
       console.log('API Response for update:', response.data);
@@ -67,10 +67,10 @@ export const clienteService = {
   },
 
   // Delete cliente
-  async delete(id: string): Promise<void> {
-    console.log(`Deleting client with ID: ${id}`);
+  async delete(codigo: string): Promise<void> {
+    console.log(`Deleting client with codigo: ${codigo}`);
     try {
-      await api.delete(API_ENDPOINTS.clientes.delete(id));
+      await api.delete(API_ENDPOINTS.clientes.delete(codigo));
       console.log('Client deleted successfully');
     } catch (error) {
       console.error('Error in delete:', error);
