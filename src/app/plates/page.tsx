@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Edit, Trash2, Plus, List } from "lucide-react"
+import { Search, Edit, Trash2, Plus, List, Loader2 } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,59 +20,80 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-
-// Sample plate data
-const initialPlates = [
-  {
-    id: 1,
-    nombre: "Ceviche",
-    descripcion: "Pescado fresco en limón",
-    precio: 25.90,
-    tipoPlato: "Entradas",
-    estado: true
-  },
-  {
-    id: 2,
-    nombre: "Lomo Saltado",
-    descripcion: "Plato típico peruano",
-    precio: 45.90,
-    tipoPlato: "Platos Principales",
-    estado: true
-  },
-  {
-    id: 3,
-    nombre: "Suspiro a la Limeña",
-    descripcion: "Postre tradicional",
-    precio: 15.90,
-    tipoPlato: "Postres",
-    estado: true
-  },
-  {
-    id: 4,
-    nombre: "Chicha Morada",
-    descripcion: "Bebida tradicional",
-    precio: 8.90,
-    tipoPlato: "Bebidas",
-    estado: true
-  }
-]
+import { platoService } from "@/services/platos/platoService"
+import { Plato } from "@/services/api/types"
 
 export default function PlatesPage() {
   const router = useRouter()
-  const [plates, setPlates] = useState(initialPlates)
+  const [plates, setPlates] = useState<Plato[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [plateToDelete, setPlateToDelete] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [plateToDelete, setPlateToDelete] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchPlates = async () => {
+      try {
+        setLoading(true)
+        const data = await platoService.getAll()
+        setPlates(data)
+      } catch (err) {
+        setError("Error al cargar los platos")
+        console.error("Error fetching plates:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPlates()
+  }, [])
 
   const filteredPlates = plates.filter(
     (plate) =>
       plate.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       plate.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      plate.tipoPlato.toLowerCase().includes(searchTerm.toLowerCase())
+      plate.tipoPlato.nombre.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleDelete = (plateId: number) => {
-    setPlates(plates.filter(plate => plate.id !== plateId))
-    setPlateToDelete(null)
+  const handleDelete = async (codigo: string) => {
+    try {
+      await platoService.delete(codigo)
+      setPlates(plates.filter(plate => plate.codigo !== codigo))
+      setPlateToDelete(null)
+    } catch (err) {
+      setError("Error al eliminar el plato")
+      console.error("Error deleting plate:", err)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-auto p-6 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-auto p-6">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -137,11 +158,11 @@ export default function PlatesPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredPlates.map((plate) => (
-                    <TableRow key={plate.id}>
+                    <TableRow key={plate.codigo}>
                       <TableCell className="font-medium">{plate.nombre}</TableCell>
                       <TableCell>{plate.descripcion}</TableCell>
                       <TableCell>S/. {plate.precio.toFixed(2)}</TableCell>
-                      <TableCell>{plate.tipoPlato}</TableCell>
+                      <TableCell>{plate.tipoPlato.nombre}</TableCell>
                       <TableCell>
                         <span 
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -158,14 +179,14 @@ export default function PlatesPage() {
                           <Button 
                             variant="outline" 
                             size="icon"
-                            onClick={() => router.push(`/plates/${plate.id}/edit`)}
+                            onClick={() => router.push(`/plates/${plate.codigo}/edit`)}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="outline" 
                             size="icon"
-                            onClick={() => setPlateToDelete(plate.id)}
+                            onClick={() => setPlateToDelete(plate.codigo)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -188,8 +209,7 @@ export default function PlatesPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Esta acción no se puede deshacer. Esto eliminará permanentemente el plato
-                  del menú y todos sus datos asociados.
+                  Esta acción no se puede deshacer. Esto eliminará permanentemente el plato del menú.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

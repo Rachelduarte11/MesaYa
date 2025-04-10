@@ -21,6 +21,16 @@ const API_ENDPOINTS = {
     search: '/api/clientes/search',
   },
   
+  // Plato endpoints
+  platos: {
+    list: '/api/platos',
+    detail: (codigo: string) => `/api/platos/${codigo}`,
+    create: '/api/platos',
+    update: (codigo: string) => `/api/platos/${codigo}`,
+    delete: (codigo: string) => `/api/platos/${codigo}`,
+    search: '/api/platos/search',
+  },
+  
   // Add more endpoint groups as needed
   // Example:
   // products: {

@@ -136,4 +136,40 @@ export interface UpdateClienteRequest extends Partial<CreateClienteRequest> {
   codigo: string;
 }
 
+// Plato (Dish) types
+export interface Plato {
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  costo: number;
+  estado: boolean;
+  tipoPlato: {
+    codigo: number;
+    nombre: string;
+  };
+}
+
+export interface CreatePlatoRequest {
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  costo: number;
+  estado: boolean;
+  tipoPlato: {
+    codigo: number;
+  };
+}
+
+export interface UpdatePlatoRequest {
+  nombre?: string;
+  descripcion?: string;
+  precio?: number;
+  costo?: number;
+  estado?: boolean;
+  tipoPlato?: {
+    codigo: number;
+  };
+}
+
 // Add more types as needed for your specific API endpoints 
