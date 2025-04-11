@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { PlusCircle } from "lucide-react"
+import { PlusCircle, Loader2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { empleadoService } from "@/services/empleados/empleadoService"
+import { CreateEmpleadoRequest } from "@/services/api/types"
 
 // Sample data for dropdowns
 const documentTypes = [
@@ -51,25 +53,25 @@ const roles = [
 
 export default function AddStaffPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const [formData, setFormData] = useState<CreateEmpleadoRequest>({
     nombre: "",
-    apellidopaterno: "",
-    apellidomaterno: "",
-    tipodocumento: "",
-    numerodocumento: "",
-    genero: "",
-    distrito: "",
-    fechanacimiento: "",
+    apellidoPaterno: "",
+    apellidoMaterno: "",
+    documento: "",
     direccion: "",
     telefono: "",
-    celular: "",
-    correo: "",
+    email: "",
     estado: true,
-    cargo: "",
-    fechacontratacion: ""
+    fechaNacimiento: "",
+    sueldo: 0,
+    tipoDocumento: { codigo: 0 },
+    rol: { codigo: 0 },
+    distrito: { codigo: 0 }
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  
+
   // Modal state
   const [modalOpen, setModalOpen] = useState(false)
   const [modalType, setModalType] = useState("")
@@ -83,28 +85,42 @@ export default function AddStaffPage() {
   })
   const [isModalSubmitting, setIsModalSubmitting] = useState(false)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target
-    setFormData((prev) => ({ 
-      ...prev, 
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
     }))
   }
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleSelectChange = (name: keyof CreateEmpleadoRequest, value: string) => {
+    if (name === "tipoDocumento" || name === "rol" || name === "distrito") {
+      setFormData(prev => ({
+        ...prev,
+        [name]: { codigo: parseInt(value) }
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }))
+    }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Staff data submitted:", formData)
-      setIsSubmitting(false)
+    setLoading(true)
+    setError(null)
+
+    try {
+      await empleadoService.create(formData)
       router.push("/staff")
-    }, 1000)
+    } catch (err) {
+      setError("Error al crear el empleado. Por favor, intente nuevamente.")
+      console.error("Error creating employee:", err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleAddNew = (type: string) => {
@@ -174,14 +190,50 @@ export default function AddStaffPage() {
           
           <Card>
             <CardHeader>
-              <CardTitle>Información del Personal</CardTitle>
+              <CardTitle>Nuevo Empleado</CardTitle>
               <CardDescription>
-                Complete los datos del nuevo miembro del personal
+                Complete el formulario para agregar un nuevo empleado
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
+                {error && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    {error}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="tipoDocumento">Tipo de Documento</Label>
+                    <Select
+                      value={formData.tipoDocumento.codigo.toString()}
+                      onValueChange={(value) => handleSelectChange("tipoDocumento", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione tipo de documento" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {documentTypes.map((type) => (
+                          <SelectItem key={type.id} value={type.id.toString()}>
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="documento">Documento</Label>
+                    <Input
+                      id="documento"
+                      name="documento"
+                      value={formData.documento}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="nombre">Nombre</Label>
                     <Input
@@ -189,118 +241,81 @@ export default function AddStaffPage() {
                       name="nombre"
                       value={formData.nombre}
                       onChange={handleChange}
-                      placeholder="Nombre"
-                      maxLength={40}
                       required
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="apellidopaterno">Apellido Paterno</Label>
+                    <Label htmlFor="apellidoPaterno">Apellido Paterno</Label>
                     <Input
-                      id="apellidopaterno"
-                      name="apellidopaterno"
-                      value={formData.apellidopaterno}
+                      id="apellidoPaterno"
+                      name="apellidoPaterno"
+                      value={formData.apellidoPaterno}
                       onChange={handleChange}
-                      placeholder="Apellido Paterno"
-                      maxLength={40}
                       required
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="apellidomaterno">Apellido Materno</Label>
+                    <Label htmlFor="apellidoMaterno">Apellido Materno</Label>
                     <Input
-                      id="apellidomaterno"
-                      name="apellidomaterno"
-                      value={formData.apellidomaterno}
+                      id="apellidoMaterno"
+                      name="apellidoMaterno"
+                      value={formData.apellidoMaterno}
                       onChange={handleChange}
-                      placeholder="Apellido Materno"
-                      maxLength={40}
-                      required
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="tipodocumento">Tipo de Documento</Label>
-                    <Select 
-                      value={formData.tipodocumento} 
-                      onValueChange={(value) => handleSelectChange("tipodocumento", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione tipo de documento" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {documentTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.code}>
-                            {type.name}
-                          </SelectItem>
-                        ))}
-                        <SelectItem 
-                          value="add-new" 
-                          className="flex items-center text-green-600 cursor-pointer"
-                          onSelect={() => handleAddNew("documentType")}
-                        >
-                          <div className="flex items-center">
-                            <PlusCircle className="h-4 w-4 mr-2" />
-                            <span>Agregar nuevo tipo de documento</span>
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="numerodocumento">Número de Documento</Label>
+                    <Label htmlFor="fechaNacimiento">Fecha de Nacimiento</Label>
                     <Input
-                      id="numerodocumento"
-                      name="numerodocumento"
-                      value={formData.numerodocumento}
-                      onChange={handleChange}
-                      placeholder="Número de Documento"
-                      maxLength={20}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="fechanacimiento">Fecha de Nacimiento</Label>
-                    <Input
-                      id="fechanacimiento"
-                      name="fechanacimiento"
+                      id="fechaNacimiento"
+                      name="fechaNacimiento"
                       type="date"
-                      value={formData.fechanacimiento}
+                      value={formData.fechaNacimiento}
                       onChange={handleChange}
                       required
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="genero">Género</Label>
-                    <Select 
-                      value={formData.genero} 
-                      onValueChange={(value) => handleSelectChange("genero", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione género" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {genders.map((gender) => (
-                          <SelectItem key={gender.id} value={gender.code}>
-                            {gender.name}
-                          </SelectItem>
-                        ))}
-                        <SelectItem 
-                          value="add-new" 
-                          className="flex items-center text-green-600 cursor-pointer"
-                          onSelect={() => handleAddNew("gender")}
-                        >
-                          <div className="flex items-center">
-                            <PlusCircle className="h-4 w-4 mr-2" />
-                            <span>Agregar nuevo género</span>
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="telefono">Teléfono</Label>
+                    <Input
+                      id="telefono"
+                      name="telefono"
+                      value={formData.telefono}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2 col-span-2">
+                    <Label htmlFor="direccion">Dirección</Label>
+                    <Input
+                      id="direccion"
+                      name="direccion"
+                      value={formData.direccion}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="distrito">Distrito</Label>
-                    <Select 
-                      value={formData.distrito} 
+                    <Select
+                      value={formData.distrito.codigo.toString()}
                       onValueChange={(value) => handleSelectChange("distrito", value)}
                     >
                       <SelectTrigger>
@@ -308,136 +323,81 @@ export default function AddStaffPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {districts.map((district) => (
-                          <SelectItem key={district.id} value={district.code}>
+                          <SelectItem key={district.id} value={district.id.toString()}>
                             {district.name}
                           </SelectItem>
                         ))}
-                        <SelectItem 
-                          value="add-new" 
-                          className="flex items-center text-green-600 cursor-pointer"
-                          onSelect={() => handleAddNew("district")}
-                        >
-                          <div className="flex items-center">
-                            <PlusCircle className="h-4 w-4 mr-2" />
-                            <span>Agregar nuevo distrito</span>
-                          </div>
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2 col-span-2">
-                    <Label htmlFor="direccion">Dirección</Label>
-                    <Textarea
-                      id="direccion"
-                      name="direccion"
-                      value={formData.direccion}
-                      onChange={handleChange}
-                      placeholder="Dirección completa"
-                      maxLength={300}
-                      required
-                    />
-                  </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="telefono">Teléfono Fijo</Label>
-                    <Input
-                      id="telefono"
-                      name="telefono"
-                      value={formData.telefono}
-                      onChange={handleChange}
-                      placeholder="Teléfono fijo"
-                      maxLength={7}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="celular">Celular</Label>
-                    <Input
-                      id="celular"
-                      name="celular"
-                      value={formData.celular}
-                      onChange={handleChange}
-                      placeholder="Número de celular"
-                      maxLength={9}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="correo">Correo Electrónico</Label>
-                    <Input
-                      id="correo"
-                      name="correo"
-                      type="email"
-                      value={formData.correo}
-                      onChange={handleChange}
-                      placeholder="correo@ejemplo.com"
-                      maxLength={50}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cargo">Cargo</Label>
-                    <Select 
-                      value={formData.cargo} 
-                      onValueChange={(value) => handleSelectChange("cargo", value)}
+                    <Label htmlFor="rol">Rol</Label>
+                    <Select
+                      value={formData.rol.codigo.toString()}
+                      onValueChange={(value) => handleSelectChange("rol", value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un cargo" />
+                        <SelectValue placeholder="Seleccione rol" />
                       </SelectTrigger>
                       <SelectContent>
                         {roles.map((role) => (
-                          <SelectItem key={role.id} value={role.code}>
+                          <SelectItem key={role.id} value={role.id.toString()}>
                             {role.name}
                           </SelectItem>
                         ))}
-                        <SelectItem 
-                          value="add-new" 
-                          className="flex items-center text-green-600 cursor-pointer"
-                          onSelect={() => handleAddNew("role")}
-                        >
-                          <div className="flex items-center">
-                            <PlusCircle className="h-4 w-4 mr-2" />
-                            <span>Agregar nuevo cargo</span>
-                          </div>
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="fechacontratacion">Fecha de Contratación</Label>
+                    <Label htmlFor="sueldo">Sueldo</Label>
                     <Input
-                      id="fechacontratacion"
-                      name="fechacontratacion"
-                      type="date"
-                      value={formData.fechacontratacion}
+                      id="sueldo"
+                      name="sueldo"
+                      type="number"
+                      value={formData.sueldo}
                       onChange={handleChange}
                       required
                     />
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="estado">Estado</Label>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="estado"
-                        name="estado"
-                        checked={formData.estado}
-                        onChange={handleChange}
-                        className="h-4 w-4 rounded border-gray-300"
-                      />
-                      <Label htmlFor="estado" className="text-sm">Activo</Label>
-                    </div>
+                    <Select
+                      value={formData.estado ? "activo" : "inactivo"}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, estado: value === "activo" }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="activo">Activo</SelectItem>
+                        <SelectItem value="inactivo">Inactivo</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+
+              <CardFooter className="flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => router.push("/staff")}
+                  disabled={loading}
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Guardando..." : "Guardar Personal"}
+                <Button type="submit" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    "Guardar"
+                  )}
                 </Button>
               </CardFooter>
             </form>

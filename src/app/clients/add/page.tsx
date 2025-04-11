@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { clienteService } from "@/services/clientes/clienteService"
 
 // Sample data for dropdowns
 const documentTypes = [
@@ -35,17 +36,21 @@ const genders = [
 export default function AddClientPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
-    documentType: "",
-    documentNumber: "",
-    name: "",
-    lastName: "",
-    gender: "",
-    district: "",
-    address: "",
-    phone: "",
+    nombre: "",
+    apellidoPaterno: "",
+    apellidoMaterno: "",
+    documento: "",
+    direccion: "",
+    telefono: "",
     email: "",
+    estado: true,
+    fechaNacimiento: "",
+    sexo: { codigo: 0 },
+    tipoDocumento: { codigo: 0 },
+    distrito: { codigo: 0 }
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -53,19 +58,28 @@ export default function AddClientPage() {
   }
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    if (name === "sexo") {
+      setFormData(prev => ({ ...prev, sexo: { codigo: parseInt(value) } }))
+    } else if (name === "tipoDocumento.codigo") {
+      setFormData(prev => ({ ...prev, tipoDocumento: { codigo: parseInt(value) } }))
+    } else if (name === "distrito.codigo") {
+      setFormData(prev => ({ ...prev, distrito: { codigo: parseInt(value) } }))
+    }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Client data submitted:", formData)
-      setIsSubmitting(false)
+    try {
+      await clienteService.create(formData)
       router.push("/clients")
-    }, 1000)
+    } catch (err) {
+      console.error("Error creating client:", err)
+      setError("Error al crear el cliente. Por favor, intente nuevamente.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -95,15 +109,15 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="documentType">Tipo de Documento</Label>
                     <Select 
-                      value={formData.documentType} 
-                      onValueChange={(value) => handleSelectChange("documentType", value)}
+                      value={formData.tipoDocumento.codigo.toString()} 
+                      onValueChange={(value) => handleSelectChange("tipoDocumento.codigo", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione tipo de documento" />
                       </SelectTrigger>
                       <SelectContent>
                         {documentTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.code}>
+                          <SelectItem key={type.id} value={type.id.toString()}>
                             {type.name}
                           </SelectItem>
                         ))}
@@ -113,9 +127,9 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="documentNumber">Número de Documento</Label>
                     <Input
-                      id="documentNumber"
-                      name="documentNumber"
-                      value={formData.documentNumber}
+                      id="documento"
+                      name="documento"
+                      value={formData.documento}
                       onChange={handleChange}
                       placeholder="Ej: 12345678"
                       required
@@ -124,9 +138,9 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="name">Nombre</Label>
                     <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
                       onChange={handleChange}
                       placeholder="Ej: Juan"
                       required
@@ -135,9 +149,9 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Apellido</Label>
                     <Input
-                      id="lastName"
-                      name="lastName"
-                      value={formData.lastName}
+                      id="apellidoPaterno"
+                      name="apellidoPaterno"
+                      value={formData.apellidoPaterno}
                       onChange={handleChange}
                       placeholder="Ej: Pérez"
                       required
@@ -146,15 +160,15 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="gender">Género</Label>
                     <Select 
-                      value={formData.gender} 
-                      onValueChange={(value) => handleSelectChange("gender", value)}
+                      value={formData.sexo.codigo.toString()} 
+                      onValueChange={(value) => handleSelectChange("sexo", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione género" />
                       </SelectTrigger>
                       <SelectContent>
                         {genders.map((gender) => (
-                          <SelectItem key={gender.id} value={gender.code}>
+                          <SelectItem key={gender.id} value={gender.id.toString()}>
                             {gender.name}
                           </SelectItem>
                         ))}
@@ -164,15 +178,15 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="district">Distrito</Label>
                     <Select 
-                      value={formData.district} 
-                      onValueChange={(value) => handleSelectChange("district", value)}
+                      value={formData.distrito.codigo.toString()} 
+                      onValueChange={(value) => handleSelectChange("distrito.codigo", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione distrito" />
                       </SelectTrigger>
                       <SelectContent>
                         {districts.map((district) => (
-                          <SelectItem key={district.id} value={district.code}>
+                          <SelectItem key={district.id} value={district.id.toString()}>
                             {district.name}
                           </SelectItem>
                         ))}
@@ -182,9 +196,9 @@ export default function AddClientPage() {
                   <div className="space-y-2 col-span-2">
                     <Label htmlFor="address">Dirección</Label>
                     <Input
-                      id="address"
-                      name="address"
-                      value={formData.address}
+                      id="direccion"
+                      name="direccion"
+                      value={formData.direccion}
                       onChange={handleChange}
                       placeholder="Ej: Av. Arequipa 123"
                       required
@@ -193,9 +207,9 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="phone">Teléfono</Label>
                     <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
+                      id="telefono"
+                      name="telefono"
+                      value={formData.telefono}
                       onChange={handleChange}
                       placeholder="Ej: 999888777"
                       required

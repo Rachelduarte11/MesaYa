@@ -10,41 +10,70 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Image as ImageIcon } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { platoService } from "@/services/platos/platoService"
+import { CreatePlatoRequest } from "@/services/api/types"
+
+// Sample plate types - in a real app, these would come from an API
+const plateTypes = [
+  { codigo: 1, nombre: "Entradas" },
+  { codigo: 2, nombre: "Platos Principales" },
+  { codigo: 3, nombre: "Postres" },
+  { codigo: 4, nombre: "Bebidas" }
+]
 
 export default function AddPlatePage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    name: "",
-    category: "",
-    price: "",
-    cost: "",
-    type: "",
-    description: "",
-    image: "",
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [formData, setFormData] = useState<CreatePlatoRequest>({
+    nombre: "",
+    descripcion: "",
+    precio: 0,
+    costo: 0,
+    estado: true,
+    tipoPlato: {
+      codigo: 1
+    }
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    try {
+      await platoService.create(formData)
+      router.push("/plates")
+    } catch (err) {
+      setError("Error al crear el plato")
+      console.error("Error creating plate:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === "precio" || name === "costo" ? parseFloat(value) : value
+    }))
   }
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Plate data submitted:", formData)
-      setIsSubmitting(false)
-      router.push("/plates")
-    }, 1000)
+  const handleSelectChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tipoPlato: {
+        codigo: parseInt(value)
+      }
+    }))
   }
 
   return (
@@ -55,7 +84,7 @@ export default function AddPlatePage() {
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Platos", href: "/plates" }, 
+              { label: "Platos", href: "/plates" },
               { label: "Agregar Plato" }
             ]} 
           />
@@ -65,127 +94,115 @@ export default function AddPlatePage() {
             <CardHeader>
               <CardTitle>Información del Plato</CardTitle>
               <CardDescription>
-                Complete los datos del nuevo plato
+                Complete los detalles del nuevo plato
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
-              <CardContent className="space-y-4">
+              <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nombre</Label>
+                    <Label htmlFor="nombre">Nombre</Label>
                     <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
                       onChange={handleChange}
-                      placeholder="Nombre del plato"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="category">Categoría</Label>
-                    <Select 
-                      value={formData.category} 
-                      onValueChange={(value) => handleSelectChange("category", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione una categoría" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="appetizers">Entradas</SelectItem>
-                        <SelectItem value="mainCourses">Platos Principales</SelectItem>
-                        <SelectItem value="desserts">Postres</SelectItem>
-                        <SelectItem value="beverages">Bebidas</SelectItem>
-                        <SelectItem value="specialties">Especialidades</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="descripcion">Descripción</Label>
+                    <Textarea
+                      id="descripcion"
+                      name="descripcion"
+                      value={formData.descripcion}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="price">Precio de Venta</Label>
+                    <Label htmlFor="precio">Precio</Label>
                     <Input
-                      id="price"
-                      name="price"
+                      id="precio"
+                      name="precio"
                       type="number"
                       step="0.01"
-                      value={formData.price}
+                      value={formData.precio}
                       onChange={handleChange}
-                      placeholder="0.00"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="cost">Costo</Label>
+                    <Label htmlFor="costo">Costo</Label>
                     <Input
-                      id="cost"
-                      name="cost"
+                      id="costo"
+                      name="costo"
                       type="number"
                       step="0.01"
-                      value={formData.cost}
+                      value={formData.costo}
                       onChange={handleChange}
-                      placeholder="0.00"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="type">Tipo</Label>
-                    <Select 
-                      value={formData.type} 
-                      onValueChange={(value) => handleSelectChange("type", value)}
+                    <Label htmlFor="tipoPlato">Tipo de Plato</Label>
+                    <Select
+                      value={formData.tipoPlato.codigo.toString()}
+                      onValueChange={handleSelectChange}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione un tipo" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="veg">Vegetariano</SelectItem>
-                        <SelectItem value="nonVeg">No Vegetariano</SelectItem>
-                        <SelectItem value="vegan">Vegano</SelectItem>
-                        <SelectItem value="glutenFree">Sin Gluten</SelectItem>
+                        {plateTypes.map(type => (
+                          <SelectItem key={type.codigo} value={type.codigo.toString()}>
+                            {type.nombre}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="image">URL de la Imagen</Label>
-                    <div className="flex">
-                      <Input
-                        id="image"
-                        name="image"
-                        value={formData.image}
-                        onChange={handleChange}
-                        placeholder="URL de la imagen"
-                      />
-                      <Button type="button" variant="outline" className="ml-2">
-                        <ImageIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <Label htmlFor="estado">Estado</Label>
+                    <Select
+                      value={formData.estado ? "activo" : "inactivo"}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, estado: value === "activo" }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="activo">Activo</SelectItem>
+                        <SelectItem value="inactivo">Inactivo</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Descripción</Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    placeholder="Descripción detallada del plato"
-                    rows={4}
-                    required
-                  />
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => router.push("/plates")}
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Guardando..." : "Guardar Plato"}
+                <Button
+                  type="submit"
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={loading}
+                >
+                  {loading ? "Creando..." : "Crear Plato"}
                 </Button>
               </CardFooter>
             </form>
           </Card>
+
+          {error && (
+            <div className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
         </div>
       </div>
     </div>

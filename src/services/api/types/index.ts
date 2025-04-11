@@ -20,7 +20,7 @@ export interface RegisterRequest {
 export interface AuthResponse {
   token: string;
   user: {
-    id: string;
+    codigo: string;
     email: string;
     name: string;
   };
@@ -28,7 +28,7 @@ export interface AuthResponse {
 
 // User types
 export interface UserProfile {
-  id: string;
+  codigo: string;
   email: string;
   name: string;
   createdAt: string;
@@ -45,9 +45,26 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+// Common types for nested objects
+export interface TipoDocumento {
+  codigo: number;
+}
+
+export interface Sexo {
+  codigo: number;
+}
+
+export interface Distrito {
+  codigo: number;
+}
+
+export interface Rol {
+  codigo: number;
+}
+
 // Empleado (Employee) types
 export interface Empleado {
-  codigo: number;
+  codigo: string;
   nombre: string;
   apellidoPaterno: string;
   apellidoMaterno: string;
@@ -55,7 +72,12 @@ export interface Empleado {
   direccion: string;
   telefono: string;
   email: string;
+  fechaNacimiento: string;
   estado: boolean;
+  sueldo: number;
+  tipoDocumento: TipoDocumento;
+  rol: Rol;
+  distrito: Distrito;
 }
 
 export interface CreateEmpleadoRequest {
@@ -66,37 +88,88 @@ export interface CreateEmpleadoRequest {
   direccion: string;
   telefono: string;
   email: string;
+  fechaNacimiento: string;
   estado: boolean;
+  sueldo: number;
+  tipoDocumento: TipoDocumento;
+  rol: Rol;
+  distrito: Distrito;
 }
 
 export interface UpdateEmpleadoRequest extends Partial<CreateEmpleadoRequest> {
-  codigo: number;
+  codigo: string;
 }
 
 // Cliente (Customer) types
 export interface Cliente {
-  id: string;
+  codigo: string;
   nombre: string;
-  apellido: string;
-  dni: string;
-  email: string;
-  telefono: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  documento: string;
   direccion: string;
-  fechaRegistro: string;
-  estado: 'activo' | 'inactivo';
+  telefono: string;
+  email: string;
+  fechaNacimiento: string;
+  estado: boolean;
+  tipoDocumento: TipoDocumento;
+  sexo: Sexo;
+  distrito: Distrito;
 }
 
 export interface CreateClienteRequest {
   nombre: string;
-  apellido: string;
-  dni: string;
-  email: string;
-  telefono: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  documento: string;
   direccion: string;
+  telefono: string;
+  email: string;
+  fechaNacimiento: string;
+  estado: boolean;
+  tipoDocumento: TipoDocumento;
+  sexo: Sexo;
+  distrito: Distrito;
 }
 
 export interface UpdateClienteRequest extends Partial<CreateClienteRequest> {
-  id: string;
+  codigo: string;
+}
+
+// Plato (Dish) types
+export interface Plato {
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  costo: number;
+  estado: boolean;
+  tipoPlato: {
+    codigo: number;
+    nombre: string;
+  };
+}
+
+export interface CreatePlatoRequest {
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  costo: number;
+  estado: boolean;
+  tipoPlato: {
+    codigo: number;
+  };
+}
+
+export interface UpdatePlatoRequest {
+  nombre?: string;
+  descripcion?: string;
+  precio?: number;
+  costo?: number;
+  estado?: boolean;
+  tipoPlato?: {
+    codigo: number;
+  };
 }
 
 // Pedido (Order) types
