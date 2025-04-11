@@ -10,88 +10,88 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { clienteService } from "@/services/clientes/clienteService"
-
-// Sample client data
-const sampleClients = [
-  {
-    id: 1,
-    nombre: "Juan",
-    apellidopaterno: "Pérez",
-    apellidomaterno: "García",
-    numerodocumento: "12345678",
-    fechanacimiento: "1990-01-15",
-    direccion: "Av. Principal 123",
-    telefono: "555-111-2222",
-    celular: "999-888-7777",
-    correo: "juan@example.com",
-    estado: true
-  },
-  {
-    id: 2,
-    nombre: "María",
-    apellidopaterno: "López",
-    apellidomaterno: "Sánchez",
-    numerodocumento: "87654321",
-    fechanacimiento: "1985-05-20",
-    direccion: "Jr. Secundario 456",
-    telefono: "555-333-4444",
-    celular: "999-777-6666",
-    correo: "maria@example.com",
-    estado: true
-  }
-]
+import { useClientManagement } from "@/hooks/useClientManagement"
+import { Cliente } from "@/services/api/types"
 
 export default function EditClientPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const resolvedParams = use(params)
-  const clientId = parseInt(resolvedParams.id)
+  const clientId = resolvedParams.id
   
-  const [formData, setFormData] = useState({
+  const { loading, error, currentClient, fetchClient, updateClient } = useClientManagement()
+  
+  const [formData, setFormData] = useState<Partial<Cliente>>({
     nombre: "",
-    apellidopaterno: "",
-    apellidomaterno: "",
-    numerodocumento: "",
-    fechanacimiento: "",
+    apellidoPaterno: "",
+    apellidoMaterno: "",
+    documento: "",
     direccion: "",
     telefono: "",
-    celular: "",
-    correo: "",
+    email: "",
     estado: true
   })
 
-  const [error, setError] = useState("")
+  useEffect(() => {
+    if (clientId) {
+      fetchClient(clientId)
+    }
+  }, [clientId, fetchClient])
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    const client = sampleClients.find(c => c.id === clientId)
-    
-    if (client) {
-      setFormData(client)
-    } else {
-      // If client not found, redirect to clients page
-      router.push("/clients")
+    if (currentClient) {
+      setFormData(currentClient)
     }
-  }, [clientId, router])
+  }, [currentClient])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     try {
-      await clienteService.update(formData)
-      router.push("/clients")
+      if (clientId) {
+        await updateClient(clientId, { ...formData, codigo: clientId })
+        router.push("/clients")
+      }
     } catch (err) {
       console.error("Error updating client:", err)
-      setError("Error al actualizar el cliente. Por favor, intente nuevamente.")
     }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value
-    })
+    }))
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-auto p-6 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-auto p-6">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -102,7 +102,7 @@ export default function EditClientPage({ params }: { params: Promise<{ id: strin
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Clientes", href: "/clients" }, 
+              { label: "Clientes", href: "/clients" },
               { label: "Editar Cliente" }
             ]} 
           />
@@ -129,41 +129,30 @@ export default function EditClientPage({ params }: { params: Promise<{ id: strin
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="apellidopaterno">Apellido Paterno</Label>
+                    <Label htmlFor="apellidoPaterno">Apellido Paterno</Label>
                     <Input
-                      id="apellidopaterno"
-                      name="apellidopaterno"
-                      value={formData.apellidopaterno}
+                      id="apellidoPaterno"
+                      name="apellidoPaterno"
+                      value={formData.apellidoPaterno}
                       onChange={handleChange}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="apellidomaterno">Apellido Materno</Label>
+                    <Label htmlFor="apellidoMaterno">Apellido Materno</Label>
                     <Input
-                      id="apellidomaterno"
-                      name="apellidomaterno"
-                      value={formData.apellidomaterno}
+                      id="apellidoMaterno"
+                      name="apellidoMaterno"
+                      value={formData.apellidoMaterno}
                       onChange={handleChange}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="numerodocumento">Número de Documento</Label>
+                    <Label htmlFor="documento">Documento</Label>
                     <Input
-                      id="numerodocumento"
-                      name="numerodocumento"
-                      value={formData.numerodocumento}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="fechanacimiento">Fecha de Nacimiento</Label>
-                    <Input
-                      id="fechanacimiento"
-                      name="fechanacimiento"
-                      type="date"
-                      value={formData.fechanacimiento}
+                      id="documento"
+                      name="documento"
+                      value={formData.documento}
                       onChange={handleChange}
                       required
                     />
@@ -185,25 +174,16 @@ export default function EditClientPage({ params }: { params: Promise<{ id: strin
                       name="telefono"
                       value={formData.telefono}
                       onChange={handleChange}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="celular">Celular</Label>
-                    <Input
-                      id="celular"
-                      name="celular"
-                      value={formData.celular}
-                      onChange={handleChange}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="correo">Correo Electrónico</Label>
+                    <Label htmlFor="email">Email</Label>
                     <Input
-                      id="correo"
-                      name="correo"
+                      id="email"
+                      name="email"
                       type="email"
-                      value={formData.correo}
+                      value={formData.email}
                       onChange={handleChange}
                       required
                     />
@@ -225,17 +205,14 @@ export default function EditClientPage({ params }: { params: Promise<{ id: strin
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => router.push("/clients")}
                 >
                   Cancelar
                 </Button>
-                <Button 
-                  type="submit" 
-                  className="bg-green-600 hover:bg-green-700"
-                >
+                <Button type="submit">
                   Guardar Cambios
                 </Button>
               </CardFooter>

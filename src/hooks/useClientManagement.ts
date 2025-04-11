@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { clienteService } from '@/services';
+import { clienteService } from '@/services/clientes/clienteService';
 import { Cliente, CreateClienteRequest, UpdateClienteRequest } from '@/services/api/types';
 
 export const useClientManagement = () => {
@@ -43,66 +43,60 @@ export const useClientManagement = () => {
   }, []);
 
   // Create new client
-  const createClient = useCallback(async (clientData: CreateClienteRequest) => {
-    console.log('useClientManagement: Starting createClient with data:', clientData);
-    setLoading(true);
-    setError(null);
+  const createClient = async (cliente: CreateClienteRequest): Promise<Cliente | null> => {
     try {
-      const response = await clienteService.create(clientData);
-      console.log('useClientManagement: Created client:', response);
+      setLoading(true);
+      setError(null);
+      const response = await clienteService.create(cliente);
       setClients((prev) => [...prev, response]);
       return response;
     } catch (err) {
-      console.error('useClientManagement: Error creating client:', err);
       setError('Error al crear el cliente');
-      throw err;
+      console.error('Error creating client:', err);
+      return null;
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   // Update client
-  const updateClient = useCallback(async (clientData: UpdateClienteRequest) => {
-    console.log('useClientManagement: Starting updateClient with data:', clientData);
-    setLoading(true);
-    setError(null);
+  const updateClient = async (codigo: string, cliente: UpdateClienteRequest): Promise<Cliente | null> => {
     try {
-      const response = await clienteService.update(clientData);
-      console.log('useClientManagement: Updated client:', response);
+      setLoading(true);
+      setError(null);
+      const response = await clienteService.update({ ...cliente, codigo });
       setClients((prev) =>
-        prev.map((client) => (client.codigo === clientData.codigo ? response : client))
+        prev.map((client) => (client.codigo === codigo ? response : client))
       );
       setCurrentClient(response);
       return response;
     } catch (err) {
-      console.error('useClientManagement: Error updating client:', err);
       setError('Error al actualizar el cliente');
-      throw err;
+      console.error('Error updating client:', err);
+      return null;
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   // Delete client
-  const deleteClient = useCallback(async (id: string) => {
-    console.log('useClientManagement: Starting deleteClient for ID:', id);
-    setLoading(true);
-    setError(null);
+  const deleteClient = async (codigo: string): Promise<void> => {
     try {
-      await clienteService.delete(id);
-      console.log('useClientManagement: Deleted client with ID:', id);
-      setClients((prev) => prev.filter((client) => client.codigo !== id));
-      if (currentClient?.codigo === id) {
+      setLoading(true);
+      setError(null);
+      await clienteService.delete(codigo);
+      setClients((prev) => prev.filter((client) => client.codigo !== codigo));
+      if (currentClient?.codigo === codigo) {
         setCurrentClient(null);
       }
     } catch (err) {
-      console.error('useClientManagement: Error deleting client:', err);
       setError('Error al eliminar el cliente');
+      console.error('Error deleting client:', err);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [currentClient]);
+  };
 
   // Search clients
   const searchClients = useCallback(async (query: string) => {

@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { empleadoService } from '@/services/empleados/empleadoService';
-import { Empleado } from '@/services/api/types';
+import { Empleado, CreateEmpleadoRequest, UpdateEmpleadoRequest } from '@/services/api/types';
 
-export function useEmployeeManagement() {
+export const useEmployeeManagement = () => {
   const [employees, setEmployees] = useState<Empleado[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +79,51 @@ export function useEmployeeManagement() {
     setCurrentPage(page);
   };
 
+  const createEmployee = async (empleado: CreateEmpleadoRequest): Promise<Empleado | null> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await empleadoService.create(empleado);
+      return response;
+    } catch (err) {
+      setError('Error al crear el empleado');
+      console.error('Error creating employee:', err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateEmployee = async (codigo: string, empleado: UpdateEmpleadoRequest): Promise<Empleado | null> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await empleadoService.update(codigo, empleado);
+      return response;
+    } catch (err) {
+      setError('Error al actualizar el empleado');
+      console.error('Error updating employee:', err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteEmployee = async (codigo: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await empleadoService.delete(codigo);
+      return true;
+    } catch (err) {
+      setError('Error al eliminar el empleado');
+      console.error('Error deleting employee:', err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     employees: currentEmployees,
     loading,
@@ -89,5 +134,8 @@ export function useEmployeeManagement() {
     handleSearch,
     handleDelete,
     handlePageChange,
+    createEmployee,
+    updateEmployee,
+    deleteEmployee,
   };
-} 
+}; 
