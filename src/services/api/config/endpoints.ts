@@ -30,6 +30,16 @@ const API_ENDPOINTS = {
     delete: (codigo: string) => `/api/platos/${codigo}`,
     search: '/api/platos/search',
   },
+
+    // Pedido endpoints
+    pedidos: {
+      list: '/api/pedidos',
+      detail: (id: string) => `/api/pedidos/${id}`,
+      create: '/api/pedidos',
+      update: (id: string) => `/api/pedidos/${id}`,
+      delete: (id: string) => `/api/pedidos/${id}`,
+      search: '/api/pedidos/search',
+    },
   
   // Add more endpoint groups as needed
   // Example:
