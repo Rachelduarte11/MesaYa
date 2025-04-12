@@ -60,8 +60,8 @@ export function SidebarNav() {
     { 
       icon: UserCog, 
       label: "Personal", 
-      color: pathname.startsWith("/staff") ? "text-green-600" : "text-gray-600", 
-      path: "/staff" 
+      color: pathname.startsWith("/personnel") ? "text-green-600" : "text-gray-600", 
+      path: "/personnel" 
     },
     { 
       icon: Utensils, 

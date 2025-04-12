@@ -76,7 +76,7 @@ export default function RolePage() {
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Catálogo", href: "/catalog" }, 
+              { label: "Catálogo", href: "/settings" }, 
               { label: "Roles / Posiciones" }
             ]} 
           />
@@ -85,10 +85,10 @@ export default function RolePage() {
             data={roles}
             title="Roles / Posiciones"
             onAdd={() => {
-              router.push("/catalog/role/add")
+              router.push("/settings/role/add")
             }}
             onEdit={(item: Role) => {
-              router.push(`/catalog/role/${item.id}/edit`)
+              router.push(`/settings/role/${item.id}/edit`)
             }}
             onDelete={(item: Role) => {
               setRoleToDelete(item)

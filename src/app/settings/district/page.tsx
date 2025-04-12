@@ -100,7 +100,7 @@ export default function DistrictPage() {
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Catálogo", href: "/catalog" }, 
+              { label: "Catálogo", href: "/settings" }, 
               { label: "Distritos" }
             ]} 
           />
@@ -109,10 +109,10 @@ export default function DistrictPage() {
             data={districts}
             title="Distritos"
             onAdd={() => {
-              router.push("/catalog/district/add")
+              router.push("/settings/district/add")
             }}
             onEdit={(item: District) => {
-              router.push(`/catalog/district/${item.id}/edit`)
+              router.push(`/settings/district/${item.id}/edit`)
             }}
             onDelete={(item: District) => {
               setDistrictToDelete(item)

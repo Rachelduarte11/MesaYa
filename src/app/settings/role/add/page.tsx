@@ -31,7 +31,7 @@ export default function AddRolePage() {
     setTimeout(() => {
       console.log("Role data submitted:", formData)
       setIsSubmitting(false)
-      router.push("/catalog/role")
+      router.push("/settings/role")
     }, 1000)
   }
 
@@ -43,8 +43,8 @@ export default function AddRolePage() {
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Catálogo", href: "/catalog" }, 
-              { label: "Roles / Posiciones", href: "/catalog/role" },
+              { label: "Catálogo", href: "/settings" }, 
+              { label: "Roles / Posiciones", href: "/settings/role" },
               { label: "Agregar Rol / Posición" }
             ]} 
           />
@@ -87,7 +87,7 @@ export default function AddRolePage() {
               <CardFooter className="flex justify-end space-x-2">
                 <Button 
                   variant="outline" 
-                  onClick={() => router.push("/catalog/role")}
+                  onClick={() => router.push("/settings/role")}
                 >
                   Cancelar
                 </Button>

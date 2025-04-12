@@ -76,7 +76,7 @@ export default function DocumentTypePage() {
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Catálogo", href: "/catalog" }, 
+              { label: "Catálogo", href: "/settings" }, 
               { label: "Tipos de Documento" }
             ]} 
           />
@@ -85,10 +85,10 @@ export default function DocumentTypePage() {
             data={documentTypes}
             title="Tipos de Documento"
             onAdd={() => {
-              router.push("/catalog/document-type/add")
+              router.push("/settings/document-type/add")
             }}
             onEdit={(item: DocumentType) => {
-              router.push(`/catalog/document-type/${item.id}/edit`)
+              router.push(`/settings/document-type/${item.id}/edit`)
             }}
             onDelete={(item: DocumentType) => {
               setDocumentTypeToDelete(item)

@@ -100,7 +100,7 @@ export function EmployeeManagement() {
               className="pl-8"
           />
         </div>
-          <Button onClick={() => router.push("/staff/add")}>
+          <Button onClick={() => router.push("/personnel/add")}>
             <UserPlus2 className="mr-2 h-4 w-4" />
             Nuevo Empleado
         </Button>
@@ -142,7 +142,7 @@ export function EmployeeManagement() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => router.push(`/staff/${employee.codigo}/edit`)}
+                      onClick={() => router.push(`/personnel/${employee.codigo}/edit`)}
                     >
                         <Edit className="h-4 w-4" />
                       </Button>

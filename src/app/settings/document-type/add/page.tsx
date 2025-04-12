@@ -31,7 +31,7 @@ export default function AddDocumentTypePage() {
     setTimeout(() => {
       console.log("Document type data submitted:", formData)
       setIsSubmitting(false)
-      router.push("/catalog/document-type")
+      router.push("/settings/document-type")
     }, 1000)
   }
 
@@ -43,8 +43,8 @@ export default function AddDocumentTypePage() {
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Catálogo", href: "/catalog" }, 
-              { label: "Tipos de Documento", href: "/catalog/document-type" },
+              { label: "Catálogo", href: "/setting" }, 
+              { label: "Tipos de Documento", href: "/settings/document-type" },
               { label: "Agregar Tipo de Documento" }
             ]} 
           />
@@ -87,7 +87,7 @@ export default function AddDocumentTypePage() {
               <CardFooter className="flex justify-end space-x-2">
                 <Button 
                   variant="outline" 
-                  onClick={() => router.push("/catalog/document-type")}
+                  onClick={() => router.push("/settings/document-type")}
                 >
                   Cancelar
                 </Button>

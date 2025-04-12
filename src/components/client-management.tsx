@@ -40,6 +40,9 @@ export function ClientManagement({
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedClient, setSelectedClient] = useState<Cliente | null>(null)
 
+  // Filter out inactive clients
+  const activeClients = clients.filter(client => client.estado === true);
+
   useEffect(() => {
     console.log('ClientManagement: Clients updated:', clients);
   }, [clients]);
@@ -79,7 +82,7 @@ export function ClientManagement({
     )
   }
 
-  console.log('ClientManagement: Rendering with clients:', clients);
+  console.log('ClientManagement: Rendering with clients:', activeClients);
 
   return (
     <div className="space-y-6">
@@ -106,7 +109,7 @@ export function ClientManagement({
       <Card>
         <CardHeader>
           <CardTitle>Base de Datos de Clientes</CardTitle>
-          <CardDescription>Gestiona los clientes de tu restaurante</CardDescription>
+          <CardDescription>Gestiona los clientes activos de tu restaurante</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -120,48 +123,56 @@ export function ClientManagement({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clients.map((client) => (
-                <TableRow key={client.codigo}>
-                  <TableCell className="font-medium">
-                    {client.nombre} {client.apellidoPaterno}
-                  </TableCell>
-                  <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.telefono}</TableCell>
-                  <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    client.estado 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {client.estado ? 'Activo' : 'Inactivo'}
-                  </span>
-                </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button 
-                        variant="outline" 
-                        size="icon"
-                        onClick={() => router.push(`/clients/${client.codigo}/edit`)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="icon"
-                        onClick={() => setSelectedClient(client)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {activeClients.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-4">
+                    No hay clientes activos
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                activeClients.map((client) => (
+                  <TableRow key={client.codigo}>
+                    <TableCell className="font-medium">
+                      {client.nombre} {client.apellidoPaterno}
+                    </TableCell>
+                    <TableCell>{client.email}</TableCell>
+                    <TableCell>{client.telefono}</TableCell>
+                    <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      client.estado
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {client.estado ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => router.push(`/clients/${client.codigo}/edit`)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => setSelectedClient(client)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
         <CardFooter className="flex justify-between">
           <div className="text-sm text-gray-500">
-            Mostrando {clients.length} clientes
+            Mostrando {activeClients.length} clientes activos
           </div>
         </CardFooter>
       </Card>

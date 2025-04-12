@@ -83,16 +83,16 @@ export default function AddPersonnelPage() {
   const handleAddNew = (type: string) => {
     switch (type) {
       case "documentType":
-        router.push("/catalog/document-type/add")
+        router.push("/settings/document-type/add")
         break
       case "district":
-        router.push("/catalog/district/add")
+        router.push("/settings/district/add")
         break
       case "gender":
-        router.push("/catalog/gender/add")
+        router.push("/settings/gender/add")
         break
       case "role":
-        router.push("/catalog/role/add")
+        router.push("/settings/role/add")
         break
       default:
         break
