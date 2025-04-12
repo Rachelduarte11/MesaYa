@@ -8,111 +8,56 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, Plus, Minus, ShoppingCart, Save } from "lucide-react"
-
-// Sample menu items data
-const menuItems = [
-  {
-    id: 1,
-    name: "Original Chess Meat Burger With Chips",
-    category: "Burgers",
-    price: 23.99,
-    type: "Non Veg",
-    image: "/images/burger.jpg"
-  },
-  {
-    id: 2,
-    name: "Vegetarian Pizza",
-    category: "Pizza",
-    price: 18.99,
-    type: "Veg",
-    image: "/images/pizza.jpg"
-  },
-  {
-    id: 3,
-    name: "Caesar Salad",
-    category: "Salads",
-    price: 12.99,
-    type: "Veg",
-    image: "/images/salad.jpg"
-  },
-  {
-    id: 4,
-    name: "Chocolate Cake",
-    category: "Desserts",
-    price: 8.99,
-    type: "Veg",
-    image: "/images/cake.jpg"
-  },
-  {
-    id: 5,
-    name: "Chicken Wings",
-    category: "Appetizers",
-    price: 15.99,
-    type: "Non Veg",
-    image: "/images/wings.jpg"
-  }
-]
-
-// Sample tables data
-const tables = [
-  { id: 1, name: "Table 1" },
-  { id: 2, name: "Table 2" },
-  { id: 3, name: "Table 3" },
-  { id: 4, name: "Table 4" },
-  { id: 5, name: "Table 5" }
-]
-
-// Sample clients data
-const clients = [
-  { id: 1, name: "John Doe" },
-  { id: 2, name: "Jane Smith" },
-  { id: 3, name: "Bob Johnson" },
-  { id: 4, name: "Robert Fox" },
-  { id: 5, name: "Jenny Wilson" }
-]
+import { pedidoService } from "@/services/pedido/pedidoService"
+import { useRouter } from "next/navigation"
+import { useOrderData } from "@/hooks/useOrderData"
+import { CreatePedidoRequest, Plato } from "@/services/api/types"
 
 // Categories for filtering
-const categories = ["All", "Burgers", "Pizza", "Salads", "Desserts", "Appetizers"]
+const categories = ["All", "Entradas", "Platos Principales", "Postres", "Bebidas"]
 
 export function AddOrder() {
+  const router = useRouter()
+  const { clients, employees, platos, loading, error } = useOrderData()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [selectedTable, setSelectedTable] = useState("")
+  const [selectedEmployee, setSelectedEmployee] = useState("")
   const [selectedClient, setSelectedClient] = useState("")
-  const [cart, setCart] = useState<{ id: number; name: string; price: number; quantity: number }[]>([])
+  const [cart, setCart] = useState<{ codigo: string; name: string; price: number; quantity: number }[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const filteredItems = menuItems.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "All" || item.category === selectedCategory
+  const filteredPlatos = platos.filter((plato) => {
+    const matchesSearch = plato.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = selectedCategory === "All" || plato.tipoPlato.nombre === selectedCategory
     return matchesSearch && matchesCategory
   })
 
-  const addToCart = (item: (typeof menuItems)[0]) => {
-    const existingItem = cart.find((cartItem) => cartItem.id === item.id)
+  const addToCart = (plato: Plato) => {
+    const existingItem = cart.find((cartItem) => cartItem.codigo === plato.codigo)
 
     if (existingItem) {
       setCart(
         cart.map((cartItem) =>
-          cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
+          cartItem.codigo === plato.codigo ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
         )
       )
     } else {
-      setCart([...cart, { id: item.id, name: item.name, price: item.price, quantity: 1 }])
+      setCart([...cart, { codigo: plato.codigo, name: plato.nombre, price: plato.precio, quantity: 1 }])
     }
   }
 
-  const removeFromCart = (itemId: number) => {
-    setCart(cart.filter((item) => item.id !== itemId))
+  const removeFromCart = (itemCodigo: string) => {
+    setCart(cart.filter((item) => item.codigo !== itemCodigo))
   }
 
-  const updateQuantity = (itemId: number, newQuantity: number) => {
+  const updateQuantity = (itemCodigo: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      removeFromCart(itemId)
+      removeFromCart(itemCodigo)
       return
     }
 
     setCart(
-      cart.map((item) => (item.id === itemId ? { ...item, quantity: newQuantity } : item))
+      cart.map((item) => (item.codigo === itemCodigo ? { ...item, quantity: newQuantity } : item))
     )
   }
 
@@ -120,18 +65,47 @@ export function AddOrder() {
     return cart.reduce((total, item) => total + item.price * item.quantity, 0)
   }
 
-  const handleSubmit = () => {
-    // Here you would typically send the order to your backend
-    console.log({
-      table: selectedTable,
-      client: selectedClient,
-      items: cart,
-      total: getTotalAmount()
-    })
-    // Reset the form
-    setCart([])
-    setSelectedTable("")
-    setSelectedClient("")
+  const handleSubmit = async () => {
+    if (!selectedClient || !selectedEmployee || cart.length === 0) {
+      alert("Please select a client, employee and add items to the cart")
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const pedidoData: CreatePedidoRequest = {
+        nombre: `Pedido ${selectedEmployee}`,
+        estado: true,
+        estadoPedido: "Pendiente" as const,
+        clienteId: Number(selectedClient),
+        empleadoId: Number(selectedEmployee),
+        detalles: cart.map(item => ({
+          cantidad: item.quantity,
+          precioUnitario: item.price,
+          platoId: Number(item.codigo)
+        }))
+      }
+
+      await pedidoService.create(pedidoData)
+      // Reset the form
+      setCart([])
+      setSelectedEmployee("")
+      setSelectedClient("")
+      router.push("/order/see")
+    } catch (err) {
+      console.error("Error creating order:", err)
+      alert("Error creating order. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>
   }
 
   return (
@@ -169,16 +143,16 @@ export function AddOrder() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {filteredItems.map((item) => (
+                {filteredPlatos.map((plato) => (
                   <div
-                    key={item.id}
+                    key={plato.codigo}
                     className="flex items-center justify-between p-4 border rounded-lg"
                   >
                     <div>
-                      <h3 className="font-medium">{item.name}</h3>
-                      <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                      <h3 className="font-medium">{plato.nombre}</h3>
+                      <p className="text-sm text-muted-foreground">${plato.precio.toFixed(2)}</p>
                     </div>
-                    <Button size="sm" onClick={() => addToCart(item)}>
+                    <Button size="sm" onClick={() => addToCart(plato)}>
                       <Plus className="h-4 w-4 mr-1" />
                       Add
                     </Button>
@@ -199,15 +173,15 @@ export function AddOrder() {
           <CardContent>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="table">Table</Label>
-                <Select value={selectedTable} onValueChange={setSelectedTable}>
-                  <SelectTrigger id="table">
-                    <SelectValue placeholder="Select a table" />
+                <Label htmlFor="employee">Employee</Label>
+                <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+                  <SelectTrigger id="employee">
+                    <SelectValue placeholder="Select an employee" />
                   </SelectTrigger>
                   <SelectContent>
-                    {tables.map((table) => (
-                      <SelectItem key={table.id} value={table.id.toString()}>
-                        {table.name}
+                    {employees.map((employee) => (
+                      <SelectItem key={employee.codigo} value={employee.codigo.toString()}>
+                        {`${employee.nombre} ${employee.apellidoPaterno}`}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -222,8 +196,8 @@ export function AddOrder() {
                   </SelectTrigger>
                   <SelectContent>
                     {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id.toString()}>
-                        {client.name}
+                      <SelectItem key={client.codigo} value={client.codigo.toString()}>
+                        {`${client.nombre} ${client.apellidoPaterno}`}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -237,7 +211,7 @@ export function AddOrder() {
                 ) : (
                   <div className="space-y-2">
                     {cart.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between">
+                      <div key={item.codigo} className="flex items-center justify-between">
                         <div>
                           <p className="font-medium">{item.name}</p>
                           <p className="text-sm text-muted-foreground">
@@ -248,7 +222,7 @@ export function AddOrder() {
                           <Button
                             size="icon"
                             variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.codigo, item.quantity - 1)}
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
@@ -256,7 +230,7 @@ export function AddOrder() {
                           <Button
                             size="icon"
                             variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.codigo, item.quantity + 1)}
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
@@ -272,9 +246,13 @@ export function AddOrder() {
                   <span className="font-medium">Total</span>
                   <span className="font-bold">${getTotalAmount().toFixed(2)}</span>
                 </div>
-                <Button className="w-full" onClick={handleSubmit}>
+                <Button 
+                  className="w-full" 
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                >
                   <Save className="h-4 w-4 mr-2" />
-                  Save Order
+                  {isSubmitting ? "Saving..." : "Save Order"}
                 </Button>
               </div>
             </div>

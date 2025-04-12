@@ -173,35 +173,36 @@ export interface UpdatePlatoRequest {
 }
 
 // Pedido (Order) types
-export interface Pedido {
+export interface DetallePedido {
   codigo: number;
-  estado: number;
   nombre: string;
+  estado: boolean;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+  platoId: number;
+  platoNombre: string;
+}
+
+export interface Pedido {
+  id: number;
+  nombre: string;
+  estado: boolean;
+  estadoPedido: 'Pendiente' | 'En Proceso' | 'Completado' | 'Cancelado';
+  clienteId: number;
+  empleadoId: number;
+  detalles: DetallePedido[];
   fecha: string;
-  estado_pedido: string;
   total: number;
-  cliente_id: number;
-  empleado_id: number;
-  cliente?: {
-    id: number;
-    nombre: string;
-    apellido: string;
-  };
-  empleado?: {
-    codigo: number;
-    nombre: string;
-    apellidoPaterno: string;
-  };
 }
 
 export interface CreatePedidoRequest {
-  estado: number;
   nombre: string;
-  fecha: string;
-  estado_pedido: string;
-  total: number;
-  cliente_id: number;
-  empleado_id: number;
+  estado: boolean;
+  estadoPedido: 'Pendiente' | 'En Proceso' | 'Completado' | 'Cancelado';
+  clienteId: number;
+  empleadoId: number;
+  detalles: DetallePedido[];
 }
 
 export interface UpdatePedidoRequest {

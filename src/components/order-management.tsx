@@ -3,10 +3,13 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Trash2, Pencil } from 'lucide-react';
+import { Search, Trash2, Pencil, Eye } from 'lucide-react';
 import { Pedido } from '@/services/api/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { usePedidoManagement } from '@/hooks/usePedidoManagement';
+import { Badge } from '@/components/ui/badge';
+import { useRouter } from 'next/navigation';
 
 interface OrderManagementProps {
   onEdit?: (pedido: Pedido) => void;
@@ -14,69 +17,77 @@ interface OrderManagementProps {
 
 export function OrderManagement({ onEdit }: OrderManagementProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedPedido, setSelectedPedido] = useState<Pedido | null>(null);
-  
-  const {
-    loading,
-    error,
-    pedidos,
-    fetchPedidos,
-    deletePedido,
-    searchPedidos
-  } = usePedidoManagement();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const router = useRouter();
+  const { pedidos, loading, error, searchPedidos, deletePedido } = usePedidoManagement();
 
   useEffect(() => {
-    fetchPedidos();
-  }, [fetchPedidos]);
+    searchPedidos('');
+  }, [searchPedidos]);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    searchPedidos(term);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    searchPedidos(e.target.value);
   };
 
   const handleDeleteClick = (pedido: Pedido) => {
     setSelectedPedido(pedido);
-    setDeleteDialogOpen(true);
+    setIsDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const confirmDelete = async () => {
     if (selectedPedido) {
-      deletePedido(selectedPedido.codigo);
-      setDeleteDialogOpen(false);
+      await deletePedido(selectedPedido.id);
+      setIsDeleteDialogOpen(false);
       setSelectedPedido(null);
     }
   };
 
-  const handleEditClick = (pedido: Pedido) => {
-    if (onEdit) {
-      onEdit(pedido);
-    }
+  const getStatusBadge = (estado: boolean) => {
+    return (
+      <Badge className={estado ? 'bg-green-500' : 'bg-red-500'}>
+        {estado ? 'Activo' : 'Inactivo'}
+      </Badge>
+    );
+  };
+
+  const getEstadoPedidoBadge = (estadoPedido: string) => {
+    const statusColors = {
+      'Pendiente': 'bg-yellow-500',
+      'En Proceso': 'bg-blue-500',
+      'Completado': 'bg-green-500',
+      'Cancelado': 'bg-red-500',
+    };
+    return (
+      <Badge className={statusColors[estadoPedido as keyof typeof statusColors] || 'bg-gray-500'}>
+        {estadoPedido}
+      </Badge>
+    );
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('es-ES', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getClientName = (pedido: Pedido) => {
-    if (pedido.cliente) {
-      return `${pedido.cliente.nombre} ${pedido.cliente.apellido}`;
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Fecha inválida';
+      }
+      
+      const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      };
+      
+      return date.toLocaleDateString('es-ES', options);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Fecha inválida';
     }
-    return `Cliente ${pedido.cliente_id}`;
-  };
-
-  const getEmployeeName = (pedido: Pedido) => {
-    if (pedido.empleado) {
-      return `${pedido.empleado.nombre} ${pedido.empleado.apellidoPaterno}`;
-    }
-    return `Empleado ${pedido.empleado_id}`;
   };
 
   return (
@@ -87,10 +98,13 @@ export function OrderManagement({ onEdit }: OrderManagementProps) {
           <Input
             placeholder="Buscar pedidos..."
             value={searchTerm}
-            onChange={handleSearch}
+            onChange={handleSearchChange}
             className="pl-8"
           />
         </div>
+        <Button onClick={() => router.push('/order/add')}>
+          Nuevo Pedido
+        </Button>
       </div>
 
       {error && (
@@ -99,87 +113,139 @@ export function OrderManagement({ onEdit }: OrderManagementProps) {
         </div>
       )}
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Código</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Estado Pedido</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Cliente</TableHead>
-              <TableHead>Empleado</TableHead>
-              <TableHead>Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+      {loading ? (
+        <div className="text-center py-8">Cargando pedidos...</div>
+      ) : (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-4">
-                  Cargando...
-                </TableCell>
+                <TableHead>ID</TableHead>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Fecha</TableHead>
+                {/* <TableHead>Estado</TableHead> */}
+                <TableHead>Estado Pedido</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Empleado</TableHead>
+                <TableHead>Acciones</TableHead>
               </TableRow>
-            ) : pedidos.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={9} className="text-center py-4">
-                  No se encontraron pedidos
-                </TableCell>
-              </TableRow>
-            ) : (
-              pedidos.map((pedido) => (
-                <TableRow key={pedido.codigo}>
-                  <TableCell>{pedido.codigo}</TableCell>
-                  <TableCell>{pedido.estado ? 'Activo' : 'Inactivo'}</TableCell>
+            </TableHeader>
+            <TableBody>
+              {pedidos.map((pedido) => (
+                <TableRow key={pedido.id}>
+                  <TableCell>{pedido.id}</TableCell>
                   <TableCell>{pedido.nombre}</TableCell>
                   <TableCell>{formatDate(pedido.fecha)}</TableCell>
-                  <TableCell>{pedido.estado_pedido}</TableCell>
+                  {/* <TableCell>{getStatusBadge(pedido.estado)}</TableCell> */}
+                  <TableCell>{getEstadoPedidoBadge(pedido.estadoPedido)}</TableCell>
                   <TableCell>S/. {pedido.total.toFixed(2)}</TableCell>
-                  <TableCell>{getClientName(pedido)}</TableCell>
-                  <TableCell>{getEmployeeName(pedido)}</TableCell>
+                  <TableCell>{pedido.clienteId}</TableCell>
+                  <TableCell>{pedido.empleadoId}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <div className="flex space-x-2">
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
-                        onClick={() => handleEditClick(pedido)}
+                        onClick={() => {
+                          setSelectedPedido(pedido);
+                          setIsViewDialogOpen(true);
+                        }}
                       >
-                        <Pencil className="h-4 w-4 text-blue-500" />
+                        <Eye className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => onEdit?.(pedido)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
                         size="icon"
                         onClick={() => handleDeleteClick(pedido)}
                       >
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente el pedido
-              {selectedPedido && ` "${selectedPedido.nombre}"`}.
+              Esta acción no se puede deshacer. Se eliminará permanentemente el pedido.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm}>
-              Eliminar
-            </AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete}>Eliminar</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Detalles del Pedido</DialogTitle>
+          </DialogHeader>
+          {selectedPedido && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-medium mb-2">Información del Pedido</h3>
+                  <div className="space-y-1">
+                    <p><span className="font-medium">Código:</span> {selectedPedido.id}</p>
+                    <p><span className="font-medium">Nombre:</span> {selectedPedido.nombre}</p>
+                    <p><span className="font-medium">Fecha:</span> {formatDate(selectedPedido.fecha)}</p>
+                    <p><span className="font-medium">Estado:</span> {getEstadoPedidoBadge(selectedPedido.estadoPedido)}</p>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-medium mb-2">Totales</h3>
+                  <div className="space-y-1">
+                    <p><span className="font-medium">Total:</span> S/. {selectedPedido.total.toFixed(2)}</p>
+                    <p><span className="font-medium">Cliente ID:</span> {selectedPedido.clienteId}</p>
+                    <p><span className="font-medium">Empleado ID:</span> {selectedPedido.empleadoId}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-medium mb-2">Detalles del Pedido</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Plato</TableHead>
+                      <TableHead>Cantidad</TableHead>
+                      <TableHead>Precio Unitario</TableHead>
+                      <TableHead>Subtotal</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedPedido.detalles.map((detalle) => (
+                      <TableRow key={detalle.codigo}>
+                        <TableCell>{detalle.platoNombre}</TableCell>
+                        <TableCell>{detalle.cantidad}</TableCell>
+                        <TableCell>S/. {detalle.precioUnitario.toFixed(2)}</TableCell>
+                        <TableCell>S/. {detalle.subtotal.toFixed(2)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 } 
