@@ -39,7 +39,7 @@ export function OrderManagement({ onEdit }: OrderManagementProps) {
 
   const confirmDelete = async () => {
     if (selectedPedido) {
-      await deletePedido(selectedPedido.id);
+      await deletePedido(selectedPedido.codigo);
       setIsDeleteDialogOpen(false);
       setSelectedPedido(null);
     }
@@ -123,7 +123,6 @@ export function OrderManagement({ onEdit }: OrderManagementProps) {
                 <TableHead>ID</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Fecha</TableHead>
-                {/* <TableHead>Estado</TableHead> */}
                 <TableHead>Estado Pedido</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Cliente</TableHead>
@@ -133,15 +132,14 @@ export function OrderManagement({ onEdit }: OrderManagementProps) {
             </TableHeader>
             <TableBody>
               {pedidos.map((pedido) => (
-                <TableRow key={pedido.id}>
-                  <TableCell>{pedido.id}</TableCell>
+                <TableRow key={pedido.codigo}>
+                  <TableCell>{pedido.codigo}</TableCell>
                   <TableCell>{pedido.nombre}</TableCell>
                   <TableCell>{formatDate(pedido.fecha)}</TableCell>
-                  {/* <TableCell>{getStatusBadge(pedido.estado)}</TableCell> */}
                   <TableCell>{getEstadoPedidoBadge(pedido.estadoPedido)}</TableCell>
                   <TableCell>S/. {pedido.total.toFixed(2)}</TableCell>
-                  <TableCell>{pedido.clienteId}</TableCell>
-                  <TableCell>{pedido.empleadoId}</TableCell>
+                  <TableCell>{pedido.clienteNombre}</TableCell>
+                  <TableCell>{pedido.empleadoNombre}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
                       <Button
@@ -203,7 +201,7 @@ export function OrderManagement({ onEdit }: OrderManagementProps) {
                 <div>
                   <h3 className="font-medium mb-2">Información del Pedido</h3>
                   <div className="space-y-1">
-                    <p><span className="font-medium">Código:</span> {selectedPedido.id}</p>
+                    <p><span className="font-medium">Código:</span> {selectedPedido.codigo}</p>
                     <p><span className="font-medium">Nombre:</span> {selectedPedido.nombre}</p>
                     <p><span className="font-medium">Fecha:</span> {formatDate(selectedPedido.fecha)}</p>
                     <p><span className="font-medium">Estado:</span> {getEstadoPedidoBadge(selectedPedido.estadoPedido)}</p>
@@ -231,14 +229,16 @@ export function OrderManagement({ onEdit }: OrderManagementProps) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {selectedPedido.detalles.map((detalle) => (
-                      <TableRow key={detalle.codigo}>
-                        <TableCell>{detalle.platoNombre}</TableCell>
-                        <TableCell>{detalle.cantidad}</TableCell>
-                        <TableCell>S/. {detalle.precioUnitario.toFixed(2)}</TableCell>
-                        <TableCell>S/. {detalle.subtotal.toFixed(2)}</TableCell>
-                      </TableRow>
-                    ))}
+                    {selectedPedido.detalles
+                      .filter(detalle => detalle.estado)
+                      .map((detalle) => (
+                        <TableRow key={detalle.codigo}>
+                          <TableCell>{detalle.platoNombre}</TableCell>
+                          <TableCell>{detalle.cantidad}</TableCell>
+                          <TableCell>S/. {detalle.precioUnitario.toFixed(2)}</TableCell>
+                          <TableCell>S/. {detalle.subtotal.toFixed(2)}</TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </div>

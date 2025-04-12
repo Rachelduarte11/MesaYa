@@ -93,32 +93,32 @@ export function EmployeeManagement() {
         <div className="flex justify-between items-center mb-4">
           <div className="relative w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-            <Input
+          <Input
               placeholder="Buscar empleados..."
-              value={searchTerm}
+            value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-8"
-            />
-          </div>
+          />
+        </div>
           <Button onClick={() => router.push("/staff/add")}>
             <UserPlus2 className="mr-2 h-4 w-4" />
             Nuevo Empleado
-          </Button>
-        </div>
+        </Button>
+      </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
+          <Table>
+            <TableHeader>
+              <TableRow>
               <TableHead>Nombre Completo</TableHead>
               <TableHead>Documento</TableHead>
               <TableHead>Teléfono</TableHead>
-              <TableHead>Email</TableHead>
+                <TableHead>Email</TableHead>
               <TableHead>Sueldo</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
             {employees.map((employee) => (
               <TableRow key={employee.codigo}>
                 <TableCell>
@@ -126,17 +126,17 @@ export function EmployeeManagement() {
                 </TableCell>
                 <TableCell>{employee.documento}</TableCell>
                 <TableCell>{employee.telefono}</TableCell>
-                <TableCell>{employee.email}</TableCell>
+                  <TableCell>{employee.email}</TableCell>
                 <TableCell>S/. {employee.sueldo.toFixed(2)}</TableCell>
-                <TableCell>
+                  <TableCell>
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     employee.estado 
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-red-100 text-red-800'
                   }`}>
                     {employee.estado ? 'Activo' : 'Inactivo'}
-                  </span>
-                </TableCell>
+                    </span>
+                  </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end space-x-2">
                     <Button
@@ -144,21 +144,21 @@ export function EmployeeManagement() {
                       size="icon"
                       onClick={() => router.push(`/staff/${employee.codigo}/edit`)}
                     >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                        <Edit className="h-4 w-4" />
+                      </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDeleteClick(employee)}
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
         {totalPages > 1 && (
           <div className="flex justify-center items-center mt-4 space-x-2">
@@ -201,7 +201,7 @@ export function EmployeeManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+      </Card>
   )
 }
 

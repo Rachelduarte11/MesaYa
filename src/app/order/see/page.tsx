@@ -13,7 +13,7 @@ export default function VerPedidoPage() {
 
   const handleEdit = (pedido: Pedido) => {
     // Navigate to the edit page with the order code
-    router.push(`/order/edit/${pedido.codigo}`);
+    router.push(`/order/${pedido.codigo}/edit`);
   };
 
   return (

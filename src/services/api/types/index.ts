@@ -185,12 +185,14 @@ export interface DetallePedido {
 }
 
 export interface Pedido {
-  id: number;
+  codigo: number;
   nombre: string;
   estado: boolean;
   estadoPedido: 'Pendiente' | 'En Proceso' | 'Completado' | 'Cancelado';
   clienteId: number;
+  clienteNombre: string;
   empleadoId: number;
+  empleadoNombre: string;
   detalles: DetallePedido[];
   fecha: string;
   total: number;
@@ -207,13 +209,16 @@ export interface CreatePedidoRequest {
 
 export interface UpdatePedidoRequest {
   codigo: number;
-  estado?: number;
   nombre?: string;
-  fecha?: string;
-  estado_pedido?: string;
-  total?: number;
-  cliente_id?: number;
-  empleado_id?: number;
+  estado?: boolean;
+  estadoPedido?: 'Pendiente' | 'En Proceso' | 'Completado' | 'Cancelado';
+  clienteId?: number;
+  empleadoId?: number;
+  detalles?: Array<{
+    cantidad: number;
+    precioUnitario: number;
+    platoId: number;
+  }>;
 }
 
 // Add more types as needed for your specific API endpoints 
