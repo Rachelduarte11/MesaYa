@@ -13,19 +13,24 @@ import { useRouter } from 'next/navigation';
 
 interface OrderManagementProps {
   onEdit?: (pedido: Pedido) => void;
+  showAll?: boolean;
 }
 
-export function OrderManagement({ onEdit }: OrderManagementProps) {
+export function OrderManagement({ onEdit, showAll = false }: OrderManagementProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPedido, setSelectedPedido] = useState<Pedido | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const router = useRouter();
-  const { pedidos, loading, error, searchPedidos, deletePedido } = usePedidoManagement();
+  const { pedidos, loading, error, searchPedidos, deletePedido, fetchPedidos, fetchActivePedidos } = usePedidoManagement();
 
   useEffect(() => {
-    searchPedidos('');
-  }, [searchPedidos]);
+    if (showAll) {
+      fetchPedidos();
+    } else {
+      fetchActivePedidos();
+    }
+  }, [showAll, fetchPedidos, fetchActivePedidos]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -94,7 +99,9 @@ export function OrderManagement({ onEdit }: OrderManagementProps) {
     <Card className="p-6">
       <CardHeader>
         <CardTitle>Gestión de Pedidos</CardTitle>
-        <CardDescription>Administre los pedidos del restaurante</CardDescription>
+        <CardDescription>
+          {showAll ? 'Administre todos los pedidos del restaurante' : 'Administre los pedidos activos del restaurante'}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex items-center justify-between mb-6">
@@ -127,8 +134,9 @@ export function OrderManagement({ onEdit }: OrderManagementProps) {
                 <TableRow>
                   <TableHead>ID</TableHead>
                   <TableHead>Nombre</TableHead>
-                  <TableHead>Fecha</TableHead>
+                  <TableHead className="min-w-[200px]">Fecha</TableHead>
                   <TableHead>Estado Pedido</TableHead>
+                  <TableHead>Estado</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Empleado</TableHead>
@@ -136,45 +144,54 @@ export function OrderManagement({ onEdit }: OrderManagementProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pedidos.map((pedido) => (
-                  <TableRow key={pedido.codigo}>
-                    <TableCell>{pedido.codigo}</TableCell>
-                    <TableCell>{pedido.nombre}</TableCell>
-                    <TableCell>{formatDate(pedido.fecha)}</TableCell>
-                    <TableCell>{getEstadoPedidoBadge(pedido.estadoPedido)}</TableCell>
-                    <TableCell>S/. {pedido.total.toFixed(2)}</TableCell>
-                    <TableCell>{pedido.clienteNombre}</TableCell>
-                    <TableCell>{pedido.empleadoNombre}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => {
-                            setSelectedPedido(pedido);
-                            setIsViewDialogOpen(true);
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => onEdit?.(pedido)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleDeleteClick(pedido)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                {pedidos.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-4">
+                      No hay pedidos disponibles
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  pedidos.map((pedido) => (
+                    <TableRow key={pedido.codigo}>
+                      <TableCell>{pedido.codigo}</TableCell>
+                      <TableCell>{pedido.nombre}</TableCell>
+                      <TableCell className="min-w-[200px]">{formatDate(pedido.fecha)}</TableCell>
+                      <TableCell>{getEstadoPedidoBadge(pedido.estadoPedido)}</TableCell>
+                      <TableCell>{getStatusBadge(pedido.estado)}</TableCell>
+                      <TableCell>S/. {pedido.total.toFixed(2)}</TableCell>
+                      <TableCell>{pedido.clienteNombre}</TableCell>
+                      <TableCell>{pedido.empleadoNombre}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              setSelectedPedido(pedido);
+                              setIsViewDialogOpen(true);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => onEdit?.(pedido)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleDeleteClick(pedido)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
@@ -209,7 +226,8 @@ export function OrderManagement({ onEdit }: OrderManagementProps) {
                       <p><span className="font-medium">Código:</span> {selectedPedido.codigo}</p>
                       <p><span className="font-medium">Nombre:</span> {selectedPedido.nombre}</p>
                       <p><span className="font-medium">Fecha:</span> {formatDate(selectedPedido.fecha)}</p>
-                      <p><span className="font-medium">Estado:</span> {getEstadoPedidoBadge(selectedPedido.estadoPedido)}</p>
+                      <p><span className="font-medium">Estado Pedido:</span> {getEstadoPedidoBadge(selectedPedido.estadoPedido)}</p>
+                      <p><span className="font-medium">Estado:</span> {getStatusBadge(selectedPedido.estado)}</p>
                     </div>
                   </div>
                   <div>

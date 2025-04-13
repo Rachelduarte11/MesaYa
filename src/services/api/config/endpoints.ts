@@ -58,12 +58,12 @@ const API_ENDPOINTS = {
 
   // TipoDocumento endpoints
   tipoDocumentos: {
-    list: '/api/tipo-documentos',
-    listActive: '/api/tipo-documentos/active',
-    detail: (id: string) => `/api/tipo-documentos/${id}`,
-    create: '/api/tipo-documentos',
-    update: (id: string) => `/api/tipo-documentos/${id}`,
-    delete: (id: string) => `/api/tipo-documentos/${id}`,
+    list: '/api/tipos-documento',
+    listActive: '/api/tipos-documento/active',
+    detail: (id: string) => `/api/tipos-documento/${id}`,
+    create: '/api/tipos-documento',
+    update: (id: string) => `/api/tipos-documento/${id}`,
+    delete: (id: string) => `/api/tipos-documento/${id}`,
     search: '/api/tipo-documentos/search',
   },
 

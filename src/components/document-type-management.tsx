@@ -2,12 +2,12 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Edit, Trash2, UserPlus2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
-import { useEmployeeManagement } from "@/hooks/useEmployeeManagement"
+import { Search, Edit, Trash2, FileText, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import { useDocumentTypeManagement } from "@/hooks/useDocumentTypeManagement"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,63 +19,63 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useState } from "react"
-import { Empleado } from "@/services/api/types"
+import { TipoDocumento } from "@/services/api/types"
 import { Badge } from "@/components/ui/badge"
 
-interface EmployeeManagementProps {
+interface DocumentTypeManagementProps {
   showAll?: boolean;
 }
 
-export function EmployeeManagement({ showAll = false }: EmployeeManagementProps) {
+export function DocumentTypeManagement({ showAll = false }: DocumentTypeManagementProps) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [selectedEmployee, setSelectedEmployee] = useState<Empleado | null>(null)
+  const [selectedDocumentType, setSelectedDocumentType] = useState<TipoDocumento | null>(null)
 
   const {
-    employees,
+    documentTypes,
     loading,
     error,
     currentPage,
     totalPages,
-    fetchEmployees,
-    fetchActiveEmployees,
+    fetchDocumentTypes,
+    fetchActiveDocumentTypes,
     handleSearch,
     handleDelete,
     handlePageChange,
-  } = useEmployeeManagement()
+  } = useDocumentTypeManagement()
 
   useEffect(() => {
     if (showAll) {
-      fetchEmployees()
+      fetchDocumentTypes()
     } else {
-      fetchActiveEmployees()
+      fetchActiveDocumentTypes()
     }
-  }, [fetchEmployees, fetchActiveEmployees, showAll])
+  }, [fetchDocumentTypes, fetchActiveDocumentTypes, showAll])
 
   const handleSearchChange = (term: string) => {
     setSearchTerm(term)
     handleSearch(term)
   }
 
-  const handleDeleteClick = (employee: Empleado) => {
-    setSelectedEmployee(employee)
+  const handleDeleteClick = (documentType: TipoDocumento) => {
+    setSelectedDocumentType(documentType)
     setIsDeleteModalOpen(true)
   }
 
   const handleConfirmDelete = async () => {
-    if (selectedEmployee) {
+    if (selectedDocumentType) {
       try {
-        await handleDelete(Number(selectedEmployee.codigo))
+        await handleDelete(Number(selectedDocumentType.codigo))
         setIsDeleteModalOpen(false)
-        setSelectedEmployee(null)
+        setSelectedDocumentType(null)
       } catch (err) {
-        console.error('Error deleting employee:', err)
+        console.error('Error deleting document type:', err)
       }
     }
   }
 
-  if (loading && !employees.length) {
+  if (loading && !documentTypes.length) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -94,9 +94,9 @@ export function EmployeeManagement({ showAll = false }: EmployeeManagementProps)
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{showAll ? "Todos los Empleados" : "Gestión de Empleados"}</CardTitle>
+        <CardTitle>{showAll ? "Todos los Tipos de Documento" : "Gestión de Tipos de Documento"}</CardTitle>
         <CardDescription>
-          {showAll ? "Lista completa de empleados" : "Administra los empleados del restaurante"}
+          {showAll ? "Lista completa de tipos de documento" : "Administra los tipos de documento del sistema"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -104,52 +104,44 @@ export function EmployeeManagement({ showAll = false }: EmployeeManagementProps)
           <div className="relative w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
-              placeholder="Buscar empleados..."
+              placeholder="Buscar tipos de documento..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-8"
             />
           </div>
-          <Button onClick={() => router.push("/personnel/add")}>
-            <UserPlus2 className="mr-2 h-4 w-4" />
-            Nuevo Empleado
+          <Button onClick={() => router.push("/settings/document-type/add")}>
+            <FileText className="mr-2 h-4 w-4" />
+            Nuevo Tipo de Documento
           </Button>
         </div>
 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nombre Completo</TableHead>
-              <TableHead>Documento</TableHead>
-              <TableHead>Teléfono</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Sueldo</TableHead>
+              <TableHead>Código</TableHead>
+              <TableHead>Nombre</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {employees.length === 0 ? (
+            {documentTypes.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4">
-                  No hay empleados disponibles
+                <TableCell colSpan={4} className="text-center py-4">
+                  No hay tipos de documento disponibles
                 </TableCell>
               </TableRow>
             ) : (
-              employees.map((employee) => (
-                <TableRow key={employee.codigo}>
-                  <TableCell>
-                    {employee.nombre} {employee.apellidoPaterno} {employee.apellidoMaterno}
-                  </TableCell>
-                  <TableCell>{employee.documento}</TableCell>
-                  <TableCell>{employee.telefono}</TableCell>
-                  <TableCell>{employee.email}</TableCell>
-                  <TableCell>S/. {employee.sueldo.toFixed(2)}</TableCell>
+              documentTypes.map((docType) => (
+                <TableRow key={docType.codigo}>
+                  <TableCell>{docType.codigo}</TableCell>
+                  <TableCell>{docType.nombre}</TableCell>
                   <TableCell>
                     <Badge
-                      className={employee.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                      className={docType.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
                     >
-                      {employee.estado ? 'Activo' : 'Inactivo'}
+                      {docType.estado ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -157,14 +149,14 @@ export function EmployeeManagement({ showAll = false }: EmployeeManagementProps)
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => router.push(`/personnel/${employee.codigo}/edit`)}
+                        onClick={() => router.push(`/settings/document-type/${docType.codigo}/edit`)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteClick(employee)}
+                        onClick={() => handleDeleteClick(docType)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -206,7 +198,7 @@ export function EmployeeManagement({ showAll = false }: EmployeeManagementProps)
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el empleado "{selectedEmployee?.nombre} {selectedEmployee?.apellidoPaterno}".
+              Esta acción no se puede deshacer. Se eliminará permanentemente el tipo de documento "{selectedDocumentType?.nombre}".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -219,5 +211,4 @@ export function EmployeeManagement({ showAll = false }: EmployeeManagementProps)
       </AlertDialog>
     </Card>
   )
-}
-
+} 
