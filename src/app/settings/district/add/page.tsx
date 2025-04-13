@@ -9,14 +9,17 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useDistrictManagement } from "@/hooks/useDistrictManagement"
+import { toast } from "@/components/ui/use-toast"
 
 export default function AddDistrictPage() {
   const router = useRouter()
+  const { createDistrict, loading } = useDistrictManagement()
   const [formData, setFormData] = useState({
-    code: "",
-    name: "",
-    province: "",
-    department: "",
+    nombre: "",
+    descripcion: "",
+    estado: true,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -25,16 +28,39 @@ export default function AddDistrictPage() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, estado: checked }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("District data submitted:", formData)
+    try {
+      const result = await createDistrict(formData)
+      if (result) {
+        toast({
+          title: "Distrito creado",
+          description: "El distrito ha sido creado exitosamente",
+        })
+        router.push("/settings/district")
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo crear el distrito",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error creating district:", error)
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al crear el distrito",
+        variant: "destructive",
+      })
+    } finally {
       setIsSubmitting(false)
-      router.push("/catalog/district")
-    }, 1000)
+    }
   }
 
   return (
@@ -45,8 +71,8 @@ export default function AddDistrictPage() {
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Catálogo", href: "/catalog" }, 
-              { label: "Distritos", href: "/catalog/district" },
+              { label: "Catálogo", href: "/settings" }, 
+              { label: "Distritos", href: "/settings/district" },
               { label: "Agregar Distrito" }
             ]} 
           />
@@ -62,61 +88,48 @@ export default function AddDistrictPage() {
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
+                  
                   <div className="space-y-2">
-                    <Label htmlFor="code">Código</Label>
+                    <Label htmlFor="nombre">Nombre del Distrito</Label>
                     <Input
-                      id="code"
-                      name="code"
-                      value={formData.code}
-                      onChange={handleChange}
-                      placeholder="Ej: SJL"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nombre del Distrito</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
                       onChange={handleChange}
                       placeholder="Ej: San Juan de Lurigancho"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="province">Provincia</Label>
+                    <Label htmlFor="descripcion">Descripción</Label>
                     <Input
-                      id="province"
-                      name="province"
-                      value={formData.province}
+                      id="descripcion"
+                      name="descripcion"
+                      value={formData.descripcion}
                       onChange={handleChange}
-                      placeholder="Ej: Lima"
+                      placeholder="Ej: Distrito ubicado en Lima"
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="department">Departamento</Label>
-                    <Input
-                      id="department"
-                      name="department"
-                      value={formData.department}
-                      onChange={handleChange}
-                      placeholder="Ej: Lima"
-                      required
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="estado" 
+                      checked={formData.estado}
+                      onCheckedChange={handleCheckboxChange}
                     />
+                    <Label htmlFor="estado">Activo</Label>
                   </div>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end space-x-2">
                 <Button 
                   variant="outline" 
-                  onClick={() => router.push("/catalog/district")}
+                  onClick={() => router.push("/settings/district")}
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Guardando..." : "Guardar"}
+                <Button type="submit" disabled={isSubmitting || loading}>
+                  {isSubmitting || loading ? "Guardando..." : "Guardar"}
                 </Button>
               </CardFooter>
             </form>

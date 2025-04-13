@@ -119,7 +119,6 @@ export function DocumentTypeManagement({ showAll = false }: DocumentTypeManageme
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Código</TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
@@ -128,14 +127,13 @@ export function DocumentTypeManagement({ showAll = false }: DocumentTypeManageme
           <TableBody>
             {documentTypes.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-4">
+                <TableCell colSpan={3} className="text-center py-4">
                   No hay tipos de documento disponibles
                 </TableCell>
               </TableRow>
             ) : (
               documentTypes.map((docType) => (
                 <TableRow key={docType.codigo}>
-                  <TableCell>{docType.codigo}</TableCell>
                   <TableCell>{docType.nombre}</TableCell>
                   <TableCell>
                     <Badge

@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { rolService } from "@/services/roles/rolService"
+import { rolService } from "@/services/rol/rolService"
 import { Rol } from "@/services/api/types"
 import { Badge } from "@/components/ui/badge"
 
