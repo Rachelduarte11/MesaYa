@@ -1,6 +1,6 @@
 import { TipoDocumento, CreateTipoDocumentoRequest, UpdateTipoDocumentoRequest } from '../api/types';
 import API_ENDPOINTS from '../api/config/endpoints';
-import { api } from '../api/api';
+import api from '../api/config/axios';
 
 export const tipoDocumentoService = {
   getAll: async (): Promise<TipoDocumento[]> => {

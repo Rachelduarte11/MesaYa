@@ -1,6 +1,6 @@
 import { TipoPlato, CreateTipoPlatoRequest, UpdateTipoPlatoRequest } from '../api/types';
 import API_ENDPOINTS from '../api/config/endpoints';
-import { api } from '../api/api';
+import api from '../api/config/axios';
 
 export const tipoPlatoService = {
   getAll: async (): Promise<TipoPlato[]> => {

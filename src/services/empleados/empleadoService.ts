@@ -15,6 +15,11 @@ export const empleadoService = {
     }
   },
 
+  getAllActive: async (): Promise<Empleado[]> => {
+    const response = await api.get(API_ENDPOINTS.empleados.listActive);
+    return response.data;
+  },
+
   getByCodigo: async (codigo: string): Promise<Empleado> => {
     console.log(`Fetching employee with codigo: ${codigo}`);
     try {
