@@ -36,7 +36,7 @@ export default function PlatesPage() {
     const fetchPlates = async () => {
       try {
         setLoading(true)
-        const data = await platoService.getAll()
+        const data = await platoService.getAllActive()
         setPlates(data)
       } catch (err) {
         setError("Error al cargar los platos")
@@ -106,7 +106,7 @@ export default function PlatesPage() {
           <div className="flex justify-between items-center mb-6">
             <Breadcrumb 
               items={[
-                { label: "Inicio", href: "/" }, 
+                { label: "Inicio", href: "/" },
                 { label: "Platos", href: "/plates" }
               ]} 
             />
@@ -119,16 +119,22 @@ export default function PlatesPage() {
             </Button>
           </div>
           <Card>
-            <CardHeader>
-              <CardTitle>Gestión de Platos</CardTitle>
-              <CardDescription>
-                Administra los platos del restaurante
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Platos Activos</CardTitle>
+                <CardDescription>
+                  Administre los platos activos del restaurante
+                </CardDescription>
+              </div>
+              <Button onClick={() => router.push("/plates/add")}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Plato
+              </Button>
             </CardHeader>
             <CardContent>
-              <div className="flex justify-between items-center mb-4">
-                <div className="relative w-64">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <div className="flex items-center justify-between mb-6">
+                <div className="relative w-72">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Buscar platos..."
                     value={searchTerm}
@@ -136,22 +142,17 @@ export default function PlatesPage() {
                     className="pl-8"
                   />
                 </div>
-                <Button onClick={() => router.push("/plates/add")}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nuevo Plato
-                </Button>
               </div>
-
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>ID</TableHead>
                     <TableHead>Nombre</TableHead>
                     <TableHead>Descripción</TableHead>
                     <TableHead>Tipo</TableHead>
-                    <TableHead>Precio</TableHead>
                     <TableHead>Costo</TableHead>
                     <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
+                    <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -164,29 +165,27 @@ export default function PlatesPage() {
                   ) : (
                     filteredPlates.map((plate) => (
                       <TableRow key={plate.codigo}>
+                        <TableCell>{plate.codigo}</TableCell>
                         <TableCell>{plate.nombre}</TableCell>
                         <TableCell>{plate.descripcion}</TableCell>
                         <TableCell>{plate.tipoPlato.nombre}</TableCell>
-                        <TableCell>S/. {plate.precio.toFixed(2)}</TableCell>
                         <TableCell>S/. {plate.costo ? plate.costo.toFixed(2) : '0.00'}</TableCell>
                         <TableCell>
-                          <Badge
-                            className={plate.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
-                          >
+                          <Badge className={plate.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
                             {plate.estado ? 'Activo' : 'Inactivo'}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex justify-end space-x-2">
+                          <div className="flex space-x-2">
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="icon"
                               onClick={() => router.push(`/plates/${plate.codigo}/edit`)}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="icon"
                               onClick={() => setPlateToDelete(plate.codigo)}
                             >
@@ -203,7 +202,6 @@ export default function PlatesPage() {
           </Card>
         </div>
       </div>
-
       <AlertDialog open={!!plateToDelete} onOpenChange={() => setPlateToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
