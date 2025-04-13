@@ -69,13 +69,13 @@ const API_ENDPOINTS = {
 
   // TipoPlato endpoints
   tipoPlatos: {
-    list: '/api/tipo-plato',
-    listActive: '/api/tipo-plato/active',
-    detail: (id: string) => `/api/tipo-plato/${id}`,
-    create: '/api/tipo-plato',
-    update: (id: string) => `/api/tipo-plato/${id}`,
-    delete: (id: string) => `/api/tipo-plato/${id}`,
-    search: '/api/tipo-platos/search',
+    list: '/api/tipos-plato',
+    listActive: '/api/tipos-plato/active',
+    detail: (id: string) => `/api/tipos-plato/${id}`,
+    create: '/api/tipos-plato',
+    update: (id: string) => `/api/tipos-plato/${id}`,
+    delete: (id: string) => `/api/tipos-plato/${id}`,
+    search: '/api/tipos-platos/search',
   },
 
   // Distrito endpoints

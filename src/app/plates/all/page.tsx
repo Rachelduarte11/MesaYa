@@ -131,7 +131,7 @@ export default function AllPlatesPage() {
                     <TableHead>Nombre</TableHead>
                     <TableHead>Descripción</TableHead>
                     <TableHead>Tipo</TableHead>
-                    <TableHead>Costo</TableHead>
+                    <TableHead>Precio</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Acciones</TableHead>
                   </TableRow>
@@ -139,7 +139,7 @@ export default function AllPlatesPage() {
                 <TableBody>
                   {filteredPlates.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-4">
+                      <TableCell colSpan={8} className="text-center py-4">
                         No hay platos disponibles
                       </TableCell>
                     </TableRow>
@@ -150,7 +150,7 @@ export default function AllPlatesPage() {
                         <TableCell>{plate.nombre}</TableCell>
                         <TableCell>{plate.descripcion}</TableCell>
                         <TableCell>{plate.tipoPlato.nombre}</TableCell>
-                        <TableCell>S/. {plate.costo ? plate.costo.toFixed(2) : '0.00'}</TableCell>
+                        <TableCell>S/. {plate.precio.toFixed(2)}</TableCell>
                         <TableCell>
                           <Badge className={plate.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
                             {plate.estado ? 'Activo' : 'Inactivo'}

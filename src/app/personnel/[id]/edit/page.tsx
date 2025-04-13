@@ -34,6 +34,7 @@ export default function EditPersonnelPage({ params }: { params: { id: string } }
     email: "",
     estado: true,
     fechaNacimiento: "",
+    fechaIngreso: new Date().toISOString().split('T')[0],
     sueldo: 0,
     tipoDocumento: { codigo: 0, nombre: "", estado: true },
     rol: { codigo: 0, nombre: "", estado: true },
@@ -302,6 +303,18 @@ export default function EditPersonnelPage({ params }: { params: { id: string } }
                       name="fechaNacimiento"
                       type="date"
                       value={formData.fechaNacimiento}
+                      onChange={handleChange}
+                      required
+                      max={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="fechaIngreso">Fecha de Ingreso</Label>
+                    <Input
+                      id="fechaIngreso"
+                      name="fechaIngreso"
+                      type="date"
+                      value={formData.fechaIngreso}
                       onChange={handleChange}
                       required
                       max={new Date().toISOString().split('T')[0]}

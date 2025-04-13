@@ -149,10 +149,6 @@ export function SidebarNav() {
           </div>
         ))}
       </nav>
-      <Button variant="ghost" className="w-full justify-start mt-auto text-gray-600 absolute bottom-4">
-        <LogOut className="mr-2 h-4 w-4" />
-        Cerrar Sesión
-      </Button>
     </div>
   )
 }

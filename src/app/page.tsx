@@ -10,7 +10,7 @@ export default function POSPage() {
     <div className="flex h-screen bg-gray-100">
       <SidebarNav />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
+        {/* <Header /> */}
         <div className="flex-1 flex overflow-hidden">
           <main className="flex-1 overflow-auto p-4">
             <CategoryFilter />

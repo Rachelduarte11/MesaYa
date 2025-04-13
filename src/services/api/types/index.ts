@@ -79,6 +79,7 @@ export interface Empleado {
   telefono: string;
   email: string;
   fechaNacimiento: string;
+  fechaIngreso: string;
   estado: boolean;
   sueldo: number;
   tipoDocumento: TipoDocumento;
@@ -95,6 +96,7 @@ export interface CreateEmpleadoRequest {
   telefono: string;
   email: string;
   fechaNacimiento: string;
+  fechaIngreso: string;
   estado: boolean;
   sueldo: number;
   tipoDocumento: TipoDocumento;
@@ -148,7 +150,6 @@ export interface Plato {
   nombre: string;
   descripcion: string;
   precio: number;
-  costo: number;
   estado: boolean;
   tipoPlato: {
     codigo: number;
@@ -160,7 +161,6 @@ export interface CreatePlatoRequest {
   nombre: string;
   descripcion: string;
   precio: number;
-  costo: number;
   estado: boolean;
   tipoPlato: {
     codigo: number;
@@ -171,7 +171,6 @@ export interface UpdatePlatoRequest {
   nombre?: string;
   descripcion?: string;
   precio?: number;
-  costo?: number;
   estado?: boolean;
   tipoPlato?: {
     codigo: number;

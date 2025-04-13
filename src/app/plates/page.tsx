@@ -150,7 +150,7 @@ export default function PlatesPage() {
                     <TableHead>Nombre</TableHead>
                     <TableHead>Descripción</TableHead>
                     <TableHead>Tipo</TableHead>
-                    <TableHead>Costo</TableHead>
+                    <TableHead>Precio</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Acciones</TableHead>
                   </TableRow>
@@ -169,7 +169,7 @@ export default function PlatesPage() {
                         <TableCell>{plate.nombre}</TableCell>
                         <TableCell>{plate.descripcion}</TableCell>
                         <TableCell>{plate.tipoPlato.nombre}</TableCell>
-                        <TableCell>S/. {plate.costo ? plate.costo.toFixed(2) : '0.00'}</TableCell>
+                        <TableCell>S/. {plate.precio ? plate.precio.toFixed(2) : '0.00'}</TableCell>
                         <TableCell>
                           <Badge className={plate.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
                             {plate.estado ? 'Activo' : 'Inactivo'}

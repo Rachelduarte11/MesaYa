@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { use } from "react"
+import { useParams, useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
 import { Breadcrumb } from "@/components/breadcrumb"
@@ -10,101 +9,146 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { platoService } from "@/services/platos/platoService"
+import { tipoPlatoService } from "@/services/tipoPlatos/tipoPlatoService"
+import { Plato, UpdatePlatoRequest, TipoPlato } from "@/services/api/types"
+import { Loader2 } from "lucide-react"
 
-// Sample plate data
-const samplePlates = [
-  {
-    id: 1,
-    nombre: "Ceviche",
-    descripcion: "Pescado fresco en limón",
-    precio: 25.90,
-    costo: 15.00,
-    tipoPlato: 1,
-    imagen: "https://example.com/ceviche.jpg",
-    estado: true
-  },
-  {
-    id: 2,
-    nombre: "Lomo Saltado",
-    descripcion: "Plato típico peruano",
-    precio: 45.90,
-    costo: 25.00,
-    tipoPlato: 2,
-    imagen: "https://example.com/lomo-saltado.jpg",
-    estado: true
-  },
-  {
-    id: 3,
-    nombre: "Suspiro a la Limeña",
-    descripcion: "Postre tradicional",
-    precio: 15.90,
-    costo: 8.00,
-    tipoPlato: 3,
-    imagen: "https://example.com/suspiro.jpg",
-    estado: true
-  }
-]
-
-// Sample plate types
-const plateTypes = [
-  { id: 1, nombre: "Entradas" },
-  { id: 2, nombre: "Platos Principales" },
-  { id: 3, nombre: "Postres" },
-  { id: 4, nombre: "Bebidas" }
-]
-
-export default function EditPlatePage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditPlatePage() {
+  const { id } = useParams()
   const router = useRouter()
-  const resolvedParams = use(params)
-  const plateId = parseInt(resolvedParams.id)
-  
-  const [formData, setFormData] = useState({
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [tipoPlatos, setTipoPlatos] = useState<TipoPlato[]>([])
+  const [plate, setPlate] = useState<Plato | null>(null)
+  const [formData, setFormData] = useState<UpdatePlatoRequest>({
     nombre: "",
     descripcion: "",
     precio: 0,
-    costo: 0,
-    tipoPlato: 1,
-    imagen: "",
-    estado: true
+    estado: true,
+    tipoPlato: {
+      codigo: 0
+    }
   })
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    const plate = samplePlates.find(p => p.id === plateId)
-    
-    if (plate) {
-      setFormData(plate)
-    } else {
-      // If plate not found, redirect to plates page
-      router.push("/plates")
-    }
-  }, [plateId, router])
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        // Fetch plate types
+        const tipoPlatosResponse = await tipoPlatoService.getAllActive()
+        setTipoPlatos(tipoPlatosResponse)
 
-  const handleSubmit = (e: React.FormEvent) => {
+        // Fetch plate data
+        const plateResponse = await platoService.getByCodigo(id as string)
+        setPlate(plateResponse)
+        setFormData({
+          nombre: plateResponse.nombre,
+          descripcion: plateResponse.descripcion,
+          precio: plateResponse.precio,
+          estado: plateResponse.estado,
+          tipoPlato: {
+            codigo: plateResponse.tipoPlato.codigo
+          }
+        })
+      } catch (err) {
+        setError("Error al cargar los datos")
+        console.error("Error fetching data:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [id])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    // In a real app, this would be an API call to update the plate
-    console.log("Updating plate:", formData)
-    
-    // Redirect back to plates page
-    router.push("/plates")
+    setLoading(true)
+    setError(null)
+
+    try {
+      await platoService.update(id as string, formData)
+      router.push("/plates")
+    } catch (err) {
+      setError("Error al actualizar el plato")
+      console.error("Error updating plate:", err)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : 
-               type === "number" ? parseFloat(value) : value
-    })
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === "precio" ? parseFloat(value) : value
+    }))
   }
 
   const handleSelectChange = (value: string) => {
-    setFormData({
-      ...formData,
-      tipoPlato: parseInt(value)
-    })
+    setFormData(prev => ({
+      ...prev,
+      tipoPlato: {
+        codigo: parseInt(value)
+      }
+    }))
+  }
+
+  if (loading && !plate) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-auto p-6">
+            <div className="flex justify-center items-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-auto p-6">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!plate) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-auto p-6">
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+              Plato no encontrado
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -113,24 +157,30 @@ export default function EditPlatePage({ params }: { params: Promise<{ id: string
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
         <div className="flex-1 overflow-auto p-6">
-          <Breadcrumb 
-            items={[
-              { label: "Platos", href: "/plates" }, 
-              { label: "Editar Plato" }
-            ]} 
-          />
-          <h1 className="text-2xl font-bold mb-6">Editar Plato</h1>
-          
+          <div className="flex justify-between items-center mb-6">
+            <Breadcrumb 
+              items={[
+                { label: "Inicio", href: "/" },
+                { label: "Platos", href: "/plates" },
+                { label: "Editar Plato", href: `/plates/${id}/edit` }
+              ]} 
+            />
+          </div>
           <Card>
             <CardHeader>
-              <CardTitle>Información del Plato</CardTitle>
+              <CardTitle>Editar Plato</CardTitle>
               <CardDescription>
-                Actualice la información del plato
+                Modifique los datos del plato
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent className="space-y-4">
+                {error && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    {error}
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="nombre">Nombre</Label>
                     <Input
@@ -142,95 +192,67 @@ export default function EditPlatePage({ params }: { params: Promise<{ id: string
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="descripcion">Descripción</Label>
-                    <Input
-                      id="descripcion"
-                      name="descripcion"
-                      value={formData.descripcion}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="precio">Precio</Label>
-                    <Input
-                      id="precio"
-                      name="precio"
-                      type="number"
-                      step="0.01"
-                      value={formData.precio}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="costo">Costo</Label>
-                    <Input
-                      id="costo"
-                      name="costo"
-                      type="number"
-                      step="0.01"
-                      value={formData.costo}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
                     <Label htmlFor="tipoPlato">Tipo de Plato</Label>
-                    <Select 
-                      value={formData.tipoPlato.toString()} 
+                    <Select
+                      value={formData.tipoPlato?.codigo.toString()}
                       onValueChange={handleSelectChange}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un tipo" />
+                        <SelectValue placeholder="Seleccionar tipo de plato" />
                       </SelectTrigger>
                       <SelectContent>
-                        {plateTypes.map(type => (
-                          <SelectItem key={type.id} value={type.id.toString()}>
-                            {type.nombre}
+                        {tipoPlatos.map((tipo) => (
+                          <SelectItem key={tipo.codigo} value={tipo.codigo.toString()}>
+                            {tipo.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="descripcion">Descripción</Label>
+                  <Textarea
+                    id="descripcion"
+                    name="descripcion"
+                    value={formData.descripcion}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="imagen">URL de la Imagen</Label>
+                    <Label htmlFor="precio">Precio (S/.)</Label>
                     <Input
-                      id="imagen"
-                      name="imagen"
-                      value={formData.imagen}
+                      id="precio"
+                      name="precio"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.precio}
                       onChange={handleChange}
+                      required
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="estado">Estado</Label>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="estado"
-                        name="estado"
-                        checked={formData.estado}
-                        onChange={handleChange}
-                        className="h-4 w-4 rounded border-gray-300"
-                      />
-                      <Label htmlFor="estado" className="text-sm">Activo</Label>
-                    </div>
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+              <CardFooter className="flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => router.push("/plates")}
                 >
                   Cancelar
                 </Button>
-                <Button 
-                  type="submit" 
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Guardar Cambios
+                <Button type="submit" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    "Guardar"
+                  )}
                 </Button>
               </CardFooter>
             </form>
