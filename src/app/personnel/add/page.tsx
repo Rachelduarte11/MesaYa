@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
@@ -11,53 +11,61 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PlusCircle } from "lucide-react"
-
-// Sample data for dropdowns
-const documentTypes = [
-  { id: 1, code: "DNI", name: "Documento Nacional de Identidad" },
-  { id: 2, code: "CE", name: "Carnet de Extranjería" },
-  { id: 3, code: "PAS", name: "Pasaporte" }
-]
-
-const districts = [
-  { id: 1, code: "MIR", name: "Miraflores" },
-  { id: 2, code: "SJL", name: "San Juan de Lurigancho" },
-  { id: 3, code: "SMP", name: "San Martín de Porres" },
-  { id: 4, code: "BAR", name: "Barranco" },
-  { id: 5, code: "SUR", name: "Surco" }
-]
-
-const genders = [
-  { id: 1, code: "M", name: "Masculino" },
-  { id: 2, code: "F", name: "Femenino" },
-  { id: 3, code: "O", name: "Otro" }
-]
-
-const roles = [
-  { id: 1, code: "ADMIN", name: "Administrador" },
-  { id: 2, code: "MANAGER", name: "Gerente" },
-  { id: 3, code: "WAITER", name: "Mesero" },
-  { id: 4, code: "KITCHEN", name: "Cocina" },
-  { id: 5, code: "CASHIER", name: "Cajero" }
-]
+import { empleadoService } from "@/services/empleados/empleadoService"
+import { tipoDocumentoService } from "@/services/tipoDocumentos/tipoDocumentoService"
+import { distritoService } from "@/services/distritos/distritoService"
+import { sexoService } from "@/services/sexos/sexoService"
+import { rolService } from "@/services/roles/rolService"
+import { Empleado, TipoDocumento, Distrito, Sexo, Rol } from "@/services/api/types"
 
 export default function AddPersonnelPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    documentType: "",
-    documentNumber: "",
-    name: "",
-    lastName: "",
-    gender: "",
-    district: "",
-    address: "",
-    phone: "",
+  const [documentTypes, setDocumentTypes] = useState<TipoDocumento[]>([])
+  const [districts, setDistricts] = useState<Distrito[]>([])
+  const [genders, setGenders] = useState<Sexo[]>([])
+  const [roles, setRoles] = useState<Rol[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [formData, setFormData] = useState<Partial<Empleado>>({
+    nombre: "",
+    apellidoPaterno: "",
+    apellidoMaterno: "",
+    documento: "",
+    direccion: "",
+    telefono: "",
     email: "",
-    role: "",
-    salary: "",
-    startDate: "",
+    estado: true,
+    fechaNacimiento: "",
+    sueldo: 0,
+    tipoDocumento: { codigo: 0, nombre: "", estado: true },
+    rol: { codigo: 0, nombre: "", estado: true },
+    distrito: { codigo: 0, nombre: "", estado: true }
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [docTypes, dists, sexos, rolesList] = await Promise.all([
+          tipoDocumentoService.getAllActive(),
+          distritoService.getAllActive(),
+          sexoService.getAllActive(),
+          rolService.getAllActive()
+        ])
+        setDocumentTypes(docTypes)
+        setDistricts(dists)
+        setGenders(sexos)
+        setRoles(rolesList)
+      } catch (err) {
+        console.error("Error fetching data:", err)
+        setError("Error al cargar los datos. Por favor, intente nuevamente.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -65,38 +73,69 @@ export default function AddPersonnelPage() {
   }
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    if (name === "tipoDocumento") {
+      const selectedDocType = documentTypes.find(dt => dt.codigo.toString() === value)
+      if (selectedDocType) {
+        setFormData(prev => ({ ...prev, tipoDocumento: selectedDocType }))
+      }
+    } else if (name === "rol") {
+      const selectedRole = roles.find(r => r.codigo.toString() === value)
+      if (selectedRole) {
+        setFormData(prev => ({ ...prev, rol: selectedRole }))
+      }
+    } else if (name === "distrito") {
+      const selectedDistrict = districts.find(d => d.codigo.toString() === value)
+      if (selectedDistrict) {
+        setFormData(prev => ({ ...prev, distrito: selectedDistrict }))
+      }
+    }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Personnel data submitted:", formData)
-      setIsSubmitting(false)
+    try {
+      await empleadoService.create(formData as any)
       router.push("/personnel")
-    }, 1000)
+    } catch (err) {
+      console.error("Error creating employee:", err)
+      setError("Error al crear el empleado. Por favor, intente nuevamente.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleAddNew = (type: string) => {
-    switch (type) {
-      case "documentType":
-        router.push("/settings/document-type/add")
-        break
-      case "district":
-        router.push("/settings/district/add")
-        break
-      case "gender":
-        router.push("/settings/gender/add")
-        break
-      case "role":
-        router.push("/settings/role/add")
-        break
-      default:
-        break
-    }
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-auto p-6">
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-auto p-6">
+            <div className="flex items-center justify-center h-full">
+              <div className="text-red-500">{error}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -124,137 +163,120 @@ export default function AddPersonnelPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nombre</Label>
+                    <Label htmlFor="nombre">Nombre</Label>
                     <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
                       onChange={handleChange}
                       placeholder="Ej: Juan"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Apellido</Label>
+                    <Label htmlFor="apellidoPaterno">Apellido Paterno</Label>
                     <Input
-                      id="lastName"
-                      name="lastName"
-                      value={formData.lastName}
+                      id="apellidoPaterno"
+                      name="apellidoPaterno"
+                      value={formData.apellidoPaterno}
                       onChange={handleChange}
                       placeholder="Ej: Pérez"
                       required
                     />
                   </div>
-                  
                   <div className="space-y-2">
-                    <Label htmlFor="documentType">Tipo de Documento</Label>
+                    <Label htmlFor="apellidoMaterno">Apellido Materno</Label>
+                    <Input
+                      id="apellidoMaterno"
+                      name="apellidoMaterno"
+                      value={formData.apellidoMaterno}
+                      onChange={handleChange}
+                      placeholder="Ej: García"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tipoDocumento">Tipo de Documento</Label>
                     <Select 
-                      value={formData.documentType} 
-                      onValueChange={(value) => handleSelectChange("documentType", value)}
+                      value={formData.tipoDocumento?.codigo.toString()} 
+                      onValueChange={(value) => handleSelectChange("tipoDocumento", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione tipo de documento" />
                       </SelectTrigger>
                       <SelectContent>
                         {documentTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.code}>
-                            {type.name}
+                          <SelectItem key={type.codigo} value={type.codigo.toString()}>
+                            {type.nombre}
                           </SelectItem>
                         ))}
-                        <SelectItem 
-                          value="add-new" 
-                          className="flex items-center justify-between cursor-pointer"
-                          onSelect={() => handleAddNew("documentType")}
-                        >
-                          <span>Agregar nuevo tipo de documento</span>
-                          <PlusCircle className="h-4 w-4 ml-2" />
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="documentNumber">Número de Documento</Label>
+                    <Label htmlFor="documento">Número de Documento</Label>
                     <Input
-                      id="documentNumber"
-                      name="documentNumber"
-                      value={formData.documentNumber}
+                      id="documento"
+                      name="documento"
+                      value={formData.documento}
                       onChange={handleChange}
                       placeholder="Ej: 12345678"
                       required
                     />
                   </div>
-                  
                   <div className="space-y-2">
-                    <Label htmlFor="gender">Género</Label>
+                    <Label htmlFor="rol">Rol</Label>
                     <Select 
-                      value={formData.gender} 
-                      onValueChange={(value) => handleSelectChange("gender", value)}
+                      value={formData.rol?.codigo.toString()} 
+                      onValueChange={(value) => handleSelectChange("rol", value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccione género" />
+                        <SelectValue placeholder="Seleccione rol" />
                       </SelectTrigger>
                       <SelectContent>
-                        {genders.map((gender) => (
-                          <SelectItem key={gender.id} value={gender.code}>
-                            {gender.name}
+                        {roles.map((role) => (
+                          <SelectItem key={role.codigo} value={role.codigo.toString()}>
+                            {role.nombre}
                           </SelectItem>
                         ))}
-                        <SelectItem 
-                          value="add-new" 
-                          className="flex items-center justify-between cursor-pointer"
-                          onSelect={() => handleAddNew("gender")}
-                        >
-                          <span>Agregar nuevo género</span>
-                          <PlusCircle className="h-4 w-4 ml-2" />
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="district">Distrito</Label>
+                    <Label htmlFor="distrito">Distrito</Label>
                     <Select 
-                      value={formData.district} 
-                      onValueChange={(value) => handleSelectChange("district", value)}
+                      value={formData.distrito?.codigo.toString()} 
+                      onValueChange={(value) => handleSelectChange("distrito", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione distrito" />
                       </SelectTrigger>
                       <SelectContent>
                         {districts.map((district) => (
-                          <SelectItem key={district.id} value={district.code}>
-                            {district.name}
+                          <SelectItem key={district.codigo} value={district.codigo.toString()}>
+                            {district.nombre}
                           </SelectItem>
                         ))}
-                        <SelectItem 
-                          value="add-new" 
-                          className="flex items-center justify-between cursor-pointer"
-                          onSelect={() => handleAddNew("district")}
-                        >
-                          <span>Agregar nuevo distrito</span>
-                          <PlusCircle className="h-4 w-4 ml-2" />
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  
                   <div className="space-y-2 col-span-2">
-                    <Label htmlFor="address">Dirección</Label>
+                    <Label htmlFor="direccion">Dirección</Label>
                     <Input
-                      id="address"
-                      name="address"
-                      value={formData.address}
+                      id="direccion"
+                      name="direccion"
+                      value={formData.direccion}
                       onChange={handleChange}
                       placeholder="Ej: Av. Arequipa 123"
                       required
                     />
                   </div>
-                  
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Teléfono</Label>
+                    <Label htmlFor="telefono">Teléfono</Label>
                     <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
+                      id="telefono"
+                      name="telefono"
+                      value={formData.telefono}
                       onChange={handleChange}
                       placeholder="Ej: 999888777"
                       required
@@ -273,68 +295,40 @@ export default function AddPersonnelPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="role">Rol</Label>
-                    <Select 
-                      value={formData.role} 
-                      onValueChange={(value) => handleSelectChange("role", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione rol" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles.map((role) => (
-                          <SelectItem key={role.id} value={role.code}>
-                            {role.name}
-                          </SelectItem>
-                        ))}
-                        <SelectItem 
-                          value="add-new" 
-                          className="flex items-center justify-between cursor-pointer"
-                          onSelect={() => handleAddNew("role")}
-                        >
-                          <span>Agregar nuevo rol</span>
-                          <PlusCircle className="h-4 w-4 ml-2" />
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="salary">Salario</Label>
+                    <Label htmlFor="fechaNacimiento">Fecha de Nacimiento</Label>
                     <Input
-                      id="salary"
-                      name="salary"
-                      type="number"
-                      value={formData.salary}
+                      id="fechaNacimiento"
+                      name="fechaNacimiento"
+                      type="date"
+                      value={formData.fechaNacimiento}
                       onChange={handleChange}
-                      placeholder="Ej: 2500"
                       required
+                      max={new Date().toISOString().split('T')[0]}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="startDate">Fecha de Inicio</Label>
+                    <Label htmlFor="sueldo">Sueldo</Label>
                     <Input
-                      id="startDate"
-                      name="startDate"
-                      type="date"
-                      value={formData.startDate}
+                      id="sueldo"
+                      name="sueldo"
+                      type="number"
+                      value={formData.sueldo}
                       onChange={handleChange}
+                      placeholder="Ej: 2500"
                       required
+                      min="0"
                     />
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between">
+              <CardFooter className="flex justify-end space-x-2">
                 <Button 
-                  type="button" 
                   variant="outline" 
                   onClick={() => router.push("/personnel")}
                 >
                   Cancelar
                 </Button>
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                >
+                <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? "Guardando..." : "Guardar"}
                 </Button>
               </CardFooter>

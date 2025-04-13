@@ -241,64 +241,16 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="birthDate">Fecha de Nacimiento</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={`w-full justify-start text-left font-normal ${
-                            !formData.fechaNacimiento && "text-muted-foreground"
-                          }`}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.fechaNacimiento ? (
-                            format(new Date(formData.fechaNacimiento), "PPP", { locale: es })
-                          ) : (
-                            <span>Seleccione una fecha</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <DayPicker
-                          mode="single"
-                          selected={formData.fechaNacimiento ? new Date(formData.fechaNacimiento) : undefined}
-                          onSelect={handleDateChange}
-                          initialFocus
-                          showOutsideDays
-                          captionLayout="dropdown-buttons"
-                          fromYear={1900}
-                          toYear={new Date().getFullYear()}
-                          classNames={{
-                            caption: "flex justify-center pt-1 relative items-center",
-                            caption_label: "text-sm font-normal",
-                            nav: "space-x-1 flex items-center",
-                            nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                            nav_button_previous: "absolute left-1",
-                            nav_button_next: "absolute right-1",
-                            table: "w-full border-collapse space-y-1",
-                            head_row: "flex",
-                            head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-                            row: "flex w-full mt-2",
-                            cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                            day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
-                            day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                            day_today: "bg-accent text-accent-foreground",
-                            day_outside: "text-muted-foreground opacity-50",
-                            day_disabled: "text-muted-foreground opacity-50",
-                            day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
-                            day_hidden: "invisible",
-                            dropdown: "p-1 bg-popover text-popover-foreground shadow-md rounded-lg border mt-1",
-                            dropdown_month: "p-2.5 text-sm rounded-md hover:bg-accent",
-                            dropdown_year: "p-2.5 text-sm rounded-md hover:bg-accent",
-                            vhidden: "hidden"
-                          }}
-                          components={{
-                            IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-                            IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <Label htmlFor="fechaNacimiento">Fecha de Nacimiento</Label>
+                    <Input
+                      id="fechaNacimiento"
+                      name="fechaNacimiento"
+                      type="date"
+                      value={formData.fechaNacimiento}
+                      onChange={handleChange}
+                      required
+                      max={new Date().toISOString().split('T')[0]}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="district">Distrito</Label>
