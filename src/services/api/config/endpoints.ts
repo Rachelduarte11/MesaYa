@@ -4,6 +4,7 @@ const API_ENDPOINTS = {
   // Empleado endpoints
   empleados: {
     list: '/api/empleados',
+    listActive: '/api/empleados/active',
     detail: (id: string) => `/api/empleados/${id}`,
     create: '/api/empleados',
     update: (id: string) => `/api/empleados/${id}`,
@@ -14,6 +15,7 @@ const API_ENDPOINTS = {
   // Cliente endpoints
   clientes: {
     list: '/api/clientes',
+    listActive: '/api/clientes/active',
     detail: (id: string) => `/api/clientes/${id}`,
     create: '/api/clientes',
     update: (id: string) => `/api/clientes/${id}`,
@@ -24,6 +26,7 @@ const API_ENDPOINTS = {
   // Plato endpoints
   platos: {
     list: '/api/platos',
+    listActive: '/api/platos/active',
     detail: (codigo: string) => `/api/platos/${codigo}`,
     create: '/api/platos',
     update: (codigo: string) => `/api/platos/${codigo}`,
@@ -34,6 +37,7 @@ const API_ENDPOINTS = {
     // Pedido endpoints
     pedidos: {
       list: '/api/pedidos',
+      listActive: '/api/pedidos/active',
       detail: (id: string) => `/api/pedidos/${id}`,
       create: '/api/pedidos',
       update: (id: string) => `/api/pedidos/${id}`,
@@ -41,15 +45,49 @@ const API_ENDPOINTS = {
       search: '/api/pedidos/search',
     },
   
-  // Add more endpoint groups as needed
-  // Example:
-  // products: {
-  //   list: '/products',
-  //   detail: (id: string) => `/products/${id}`,
-  //   create: '/products',
-  //   update: (id: string) => `/products/${id}`,
-  //   delete: (id: string) => `/products/${id}`,
-  // },
+  // Rol endpoints
+  roles: {
+    list: '/api/roles',
+    listActive: '/api/roles/active',
+    detail: (id: string) => `/api/roles/${id}`,
+    create: '/api/roles',
+    update: (id: string) => `/api/roles/${id}`,
+    delete: (id: string) => `/api/roles/${id}`,
+    search: '/api/roles/search',
+  },
+
+  // TipoDocumento endpoints
+  tipoDocumentos: {
+    list: '/api/tipo-documentos',
+    listActive: '/api/tipo-documentos/active',
+    detail: (id: string) => `/api/tipo-documentos/${id}`,
+    create: '/api/tipo-documentos',
+    update: (id: string) => `/api/tipo-documentos/${id}`,
+    delete: (id: string) => `/api/tipo-documentos/${id}`,
+    search: '/api/tipo-documentos/search',
+  },
+
+  // TipoPlato endpoints
+  tipoPlatos: {
+    list: '/api/tipo-platos',
+    listActive: '/api/tipo-platos/active',
+    detail: (id: string) => `/api/tipo-platos/${id}`,
+    create: '/api/tipo-platos',
+    update: (id: string) => `/api/tipo-platos/${id}`,
+    delete: (id: string) => `/api/tipo-platos/${id}`,
+    search: '/api/tipo-platos/search',
+  },
+
+  // Distrito endpoints
+  distritos: {
+    list: '/api/distritos',
+    listActive: '/api/distritos/active',
+    detail: (id: string) => `/api/distritos/${id}`,
+    create: '/api/distritos',
+    update: (id: string) => `/api/distritos/${id}`,
+    delete: (id: string) => `/api/distritos/${id}`,
+    search: '/api/distritos/search',
+  },
 };
 
 export default API_ENDPOINTS; 

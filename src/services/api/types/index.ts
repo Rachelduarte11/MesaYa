@@ -48,6 +48,8 @@ export interface ChangePasswordRequest {
 // Common types for nested objects
 export interface TipoDocumento {
   codigo: number;
+  nombre: string;
+  estado: boolean;
 }
 
 export interface Sexo {
@@ -56,10 +58,14 @@ export interface Sexo {
 
 export interface Distrito {
   codigo: number;
+  nombre: string;
+  estado: boolean;
 }
 
 export interface Rol {
   codigo: number;
+  nombre: string;
+  estado: boolean;
 }
 
 // Empleado (Employee) types
@@ -219,6 +225,56 @@ export interface UpdatePedidoRequest {
     precioUnitario: number;
     platoId: number;
   }>;
+}
+
+// Rol types
+export interface CreateRolRequest {
+  nombre: string;
+  estado: boolean;
+}
+
+export interface UpdateRolRequest {
+  nombre?: string;
+  estado?: boolean;
+}
+
+// TipoDocumento types
+export interface CreateTipoDocumentoRequest {
+  nombre: string;
+  estado: boolean;
+}
+
+export interface UpdateTipoDocumentoRequest {
+  nombre?: string;
+  estado?: boolean;
+}
+
+// TipoPlato types
+export interface TipoPlato {
+  codigo: number;
+  nombre: string;
+  estado: boolean;
+}
+
+export interface CreateTipoPlatoRequest {
+  nombre: string;
+  estado: boolean;
+}
+
+export interface UpdateTipoPlatoRequest {
+  nombre?: string;
+  estado?: boolean;
+}
+
+// Distrito types
+export interface CreateDistritoRequest {
+  nombre: string;
+  estado: boolean;
+}
+
+export interface UpdateDistritoRequest {
+  nombre?: string;
+  estado?: boolean;
 }
 
 // Add more types as needed for your specific API endpoints 
