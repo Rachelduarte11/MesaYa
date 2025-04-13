@@ -13,7 +13,7 @@ export const useEmployeeManagement = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching employees...');
+      console.log('Fetching all employees...');
       const response = await empleadoService.getAll();
       console.log('Employees response:', response);
       if (response) {
@@ -32,9 +32,32 @@ export const useEmployeeManagement = () => {
     }
   }, []);
 
+  const fetchActiveEmployees = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('Fetching active employees...');
+      const response = await empleadoService.getAllActive();
+      console.log('Active employees response:', response);
+      if (response) {
+        setEmployees(response);
+      } else {
+        console.error('No response data received');
+        setError('No se pudieron cargar los empleados activos');
+        setEmployees([]);
+      }
+    } catch (err) {
+      console.error('Error fetching active employees:', err);
+      setError('Error al cargar los empleados activos: ' + (err instanceof Error ? err.message : 'Error desconocido'));
+      setEmployees([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    fetchEmployees();
-  }, [fetchEmployees]);
+    fetchActiveEmployees();
+  }, [fetchActiveEmployees]);
 
   const handleSearch = useCallback(async (query: string) => {
     try {
@@ -131,6 +154,7 @@ export const useEmployeeManagement = () => {
     currentPage,
     totalPages,
     fetchEmployees,
+    fetchActiveEmployees,
     handleSearch,
     handleDelete,
     handlePageChange,

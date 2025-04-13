@@ -13,6 +13,16 @@ export const platoService = {
     }
   },
 
+  getAllActive: async (): Promise<Plato[]> => {
+    try {
+      const response = await api.get(API_ENDPOINTS.platos.listActive);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching active platos:', error);
+      throw error;
+    }
+  },
+
   getByCodigo: async (codigo: string): Promise<Plato> => {
     try {
       const response = await api.get(API_ENDPOINTS.platos.detail(codigo));

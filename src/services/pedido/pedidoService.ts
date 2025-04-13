@@ -14,6 +14,12 @@ export const pedidoService = {
     return response.data;
   },
 
+  // Get all active pedidos
+  async getAllActive(): Promise<Pedido[]> {
+    const response = await api.get<Pedido[]>(API_ENDPOINTS.pedidos.listActive);
+    return response.data;
+  },
+
   // Get pedido by code
   async getByCode(codigo: number): Promise<Pedido> {
     const response = await api.get<Pedido>(API_ENDPOINTS.pedidos.detail(codigo.toString()));

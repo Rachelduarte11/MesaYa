@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { clienteService } from '@/services/clientes/clienteService';
 import { Cliente, CreateClienteRequest, UpdateClienteRequest } from '@/services/api/types';
 
@@ -20,6 +20,23 @@ export const useClientManagement = () => {
     } catch (err) {
       console.error('useClientManagement: Error fetching clients:', err);
       setError('Error al cargar los clientes');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch active clients
+  const fetchActiveClients = useCallback(async () => {
+    console.log('useClientManagement: Starting fetchActiveClients');
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await clienteService.getAllActive();
+      console.log('useClientManagement: Received active clients data:', response);
+      setClients(response);
+    } catch (err) {
+      console.error('useClientManagement: Error fetching active clients:', err);
+      setError('Error al cargar los clientes activos');
     } finally {
       setLoading(false);
     }
@@ -121,6 +138,7 @@ export const useClientManagement = () => {
     clients,
     currentClient,
     fetchClients,
+    fetchActiveClients,
     fetchClient,
     createClient,
     updateClient,

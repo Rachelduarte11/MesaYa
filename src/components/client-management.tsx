@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Cliente } from "@/services/api/types"
+import { Badge } from "@/components/ui/badge"
 
 interface ClientManagementProps {
   clients: Cliente[]
@@ -86,32 +87,32 @@ export function ClientManagement({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="relative w-1/3">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Buscar clientes..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-          />
-        </div>
-
-        <Button 
-          className="bg-green-600 hover:bg-green-700"
-          onClick={() => router.push("/clients/add")}
-        >
-          <UserPlus2 className="mr-2 h-4 w-4" /> Agregar Cliente
-        </Button>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Base de Datos de Clientes</CardTitle>
           <CardDescription>Gestiona los clientes activos de tu restaurante</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="flex justify-between items-center mb-4">
+            <div className="relative w-1/3">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Buscar clientes..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+            </div>
+
+            <Button 
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => router.push("/clients/add")}
+            >
+              <UserPlus2 className="mr-2 h-4 w-4" /> Agregar Cliente
+            </Button>
+          </div>
+
           <Table>
             <TableHeader>
               <TableRow>
@@ -138,14 +139,12 @@ export function ClientManagement({
                     <TableCell>{client.email}</TableCell>
                     <TableCell>{client.telefono}</TableCell>
                     <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      client.estado
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {client.estado ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </TableCell>
+                      <Badge
+                        className={client.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                      >
+                        {client.estado ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button 

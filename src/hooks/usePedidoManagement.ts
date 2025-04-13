@@ -24,6 +24,22 @@ export const usePedidoManagement = () => {
     }
   }, []);
 
+  // Fetch active pedidos
+  const fetchActivePedidos = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await pedidoService.getAllActive();
+      console.log('Fetched active pedidos:', response);
+      setPedidos(response);
+    } catch (err) {
+      setError('Error al cargar los pedidos activos');
+      console.error('Error fetching active pedidos:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Fetch single pedido
   const fetchPedido = useCallback(async (codigo: number) => {
     setLoading(true);
@@ -102,13 +118,13 @@ export const usePedidoManagement = () => {
       const filtered = response.filter(
         (pedido) =>
           pedido.nombre.toLowerCase().includes(term.toLowerCase()) ||
-          pedido.estado_pedido.toLowerCase().includes(term.toLowerCase()) ||
-          (pedido.cliente && 
-            `${pedido.cliente.nombre} ${pedido.cliente.apellido}`
+          pedido.estadoPedido.toLowerCase().includes(term.toLowerCase()) ||
+          (pedido.clienteId && 
+            `${pedido.clienteId}`
               .toLowerCase()
               .includes(term.toLowerCase())) ||
-          (pedido.empleado && 
-            `${pedido.empleado.nombre} ${pedido.empleado.apellidoPaterno}`
+          (pedido.empleadoId && 
+            `${pedido.empleadoId}`
               .toLowerCase()
               .includes(term.toLowerCase()))
       );
@@ -127,6 +143,7 @@ export const usePedidoManagement = () => {
     pedidos,
     currentPedido,
     fetchPedidos,
+    fetchActivePedidos,
     fetchPedido,
     createPedido,
     updatePedido,

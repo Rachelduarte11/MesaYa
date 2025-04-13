@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { platoService } from "@/services/platos/platoService"
 import { Plato } from "@/services/api/types"
+import { Badge } from "@/components/ui/badge"
 
 export default function PlatesPage() {
   const router = useRouter()
@@ -107,7 +108,16 @@ export default function PlatesPage() {
               { label: "Platos" }
             ]} 
           />
-          <h1 className="text-2xl font-bold mb-6">Gestión de Platos</h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Gestión de Platos</h1>
+            <Button 
+              variant="outline"
+              className="text-black border-gray-300 hover:bg-green-600 hover:text-white hover:border-green-600"
+              onClick={() => router.push('/plates/all')}
+            >
+              Ver todos los registros
+            </Button>
+          </div>
           
           <Card>
             <CardHeader>
@@ -164,15 +174,11 @@ export default function PlatesPage() {
                       <TableCell>S/. {plate.precio.toFixed(2)}</TableCell>
                       <TableCell>{plate.tipoPlato.nombre}</TableCell>
                       <TableCell>
-                        <span 
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            plate.estado 
-                              ? "bg-green-100 text-green-800" 
-                              : "bg-red-100 text-red-800"
-                          }`}
+                        <Badge
+                          className={plate.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
                         >
-                          {plate.estado ? "Activo" : "Inactivo"}
-                        </span>
+                          {plate.estado ? 'Activo' : 'Inactivo'}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">

@@ -34,14 +34,15 @@ export function EmployeeManagement() {
     currentPage,
     totalPages,
     fetchEmployees,
+    fetchActiveEmployees,
     handleSearch,
     handleDelete,
     handlePageChange,
   } = useEmployeeManagement()
 
   useEffect(() => {
-    fetchEmployees()
-  }, [fetchEmployees])
+    fetchActiveEmployees()
+  }, [fetchActiveEmployees])
 
   const handleSearchChange = (term: string) => {
     setSearchTerm(term)

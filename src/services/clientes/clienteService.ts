@@ -21,6 +21,19 @@ export const clienteService = {
     }
   },
 
+  // Get all active clientes
+  async getAllActive(): Promise<Cliente[]> {
+    console.log('Fetching all active clients from API...');
+    try {
+      const response = await api.get<Cliente[]>(API_ENDPOINTS.clientes.listActive);
+      console.log('API Response for getAllActive:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error in getAllActive:', error);
+      throw error;
+    }
+  },
+
   // Get cliente by codigo
   async getByCodigo(codigo: string): Promise<Cliente> {
     console.log(`Fetching client with codigo: ${codigo}`);
