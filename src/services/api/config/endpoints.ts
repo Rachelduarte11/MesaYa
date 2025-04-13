@@ -88,6 +88,13 @@ const API_ENDPOINTS = {
     delete: (id: string) => `/api/distritos/${id}`,
     search: '/api/distritos/search',
   },
+
+  // Sexo endpoints
+  sexos: {
+    list: '/api/sexos',
+    listActive: '/api/sexos/active',
+    detail: (codigo: number) => `/api/sexos/${codigo}`,
+  },
 };
 
 export default API_ENDPOINTS; 
