@@ -3,9 +3,9 @@
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
 import { Breadcrumb } from "@/components/breadcrumb"
-import { EmployeeManagement } from "@/components/employee-management"
+import { RoleManagement } from "@/components/role-management"
 
-export default function AllPersonnelPage() {
+export default function AllRolesPage() {
   return (
     <div className="flex h-screen bg-gray-100">
       <SidebarNav />
@@ -14,13 +14,13 @@ export default function AllPersonnelPage() {
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Inicio", href: "/" }, 
-              { label: "Personal", href: "/personnel" },
-              { label: "Todos los registros" }
+              { label: "Catálogo", href: "/settings" }, 
+              { label: "Roles", href: "/settings/role" },
+              { label: "Todos los Roles" }
             ]} 
           />
           <div className="mt-6">
-            <EmployeeManagement showAll={true} />
+            <RoleManagement showAll={true} />
           </div>
         </div>
       </div>

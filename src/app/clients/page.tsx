@@ -7,6 +7,7 @@ import { ClientManagement } from "@/components/client-management"
 import { useClientManagement } from "@/hooks/useClientManagement"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function ClientManagementPage() {
   const router = useRouter()
@@ -38,7 +39,12 @@ export default function ClientManagementPage() {
         <Header />
         <div className="flex-1 overflow-auto p-6">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Gestión de Clientes</h1>
+            <Breadcrumb 
+              items={[
+                { label: "Inicio", href: "/" }, 
+                { label: "Clientes", href: "/clients" }
+              ]} 
+            />
             <Button 
               variant="outline"
               className="text-black border-gray-300 hover:bg-green-600 hover:text-white hover:border-green-600"

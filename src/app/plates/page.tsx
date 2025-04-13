@@ -103,13 +103,13 @@ export default function PlatesPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
         <div className="flex-1 overflow-auto p-6">
-          <Breadcrumb 
-            items={[
-              { label: "Platos" }
-            ]} 
-          />
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Gestión de Platos</h1>
+            <Breadcrumb 
+              items={[
+                { label: "Inicio", href: "/" }, 
+                { label: "Platos", href: "/plates" }
+              ]} 
+            />
             <Button 
               variant="outline"
               className="text-black border-gray-300 hover:bg-green-600 hover:text-white hover:border-green-600"
@@ -118,41 +118,28 @@ export default function PlatesPage() {
               Ver todos los registros
             </Button>
           </div>
-          
           <Card>
             <CardHeader>
-              <CardTitle>Menú del Restaurante</CardTitle>
+              <CardTitle>Gestión de Platos</CardTitle>
               <CardDescription>
-                Administre los platos disponibles en el menú
+                Administra los platos del restaurante
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-center mb-4">
-                <div className="relative w-1/3">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <div className="relative w-64">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
                   <Input
-                    type="text"
                     placeholder="Buscar platos..."
-                    className="pl-10"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8"
                   />
                 </div>
-
-                <div className="flex space-x-2">
-                  <Button 
-                    variant="outline"
-                    onClick={() => router.push("/plates/types")}
-                  >
-                    <List className="mr-2 h-4 w-4" /> Tipos de Plato
-                  </Button>
-                  <Button 
-                    className="bg-green-600 hover:bg-green-700"
-                    onClick={() => router.push("/plates/add")}
-                  >
-                    <Plus className="mr-2 h-4 w-4" /> Agregar Plato
-                  </Button>
-                </div>
+                <Button onClick={() => router.push("/plates/add")}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nuevo Plato
+                </Button>
               </div>
 
               <Table>
@@ -160,77 +147,79 @@ export default function PlatesPage() {
                   <TableRow>
                     <TableHead>Nombre</TableHead>
                     <TableHead>Descripción</TableHead>
-                    <TableHead>Precio</TableHead>
                     <TableHead>Tipo</TableHead>
+                    <TableHead>Precio</TableHead>
+                    <TableHead>Costo</TableHead>
                     <TableHead>Estado</TableHead>
-                    <TableHead>Acciones</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredPlates.map((plate) => (
-                    <TableRow key={plate.codigo}>
-                      <TableCell className="font-medium">{plate.nombre}</TableCell>
-                      <TableCell>{plate.descripcion}</TableCell>
-                      <TableCell>S/. {plate.precio.toFixed(2)}</TableCell>
-                      <TableCell>{plate.tipoPlato.nombre}</TableCell>
-                      <TableCell>
-                        <Badge
-                          className={plate.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
-                        >
-                          {plate.estado ? 'Activo' : 'Inactivo'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => router.push(`/plates/${plate.codigo}/edit`)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => setPlateToDelete(plate.codigo)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                  {filteredPlates.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-4">
+                        No hay platos disponibles
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    filteredPlates.map((plate) => (
+                      <TableRow key={plate.codigo}>
+                        <TableCell>{plate.nombre}</TableCell>
+                        <TableCell>{plate.descripcion}</TableCell>
+                        <TableCell>{plate.tipoPlato.nombre}</TableCell>
+                        <TableCell>S/. {plate.precio.toFixed(2)}</TableCell>
+                        <TableCell>S/. {plate.costo ? plate.costo.toFixed(2) : '0.00'}</TableCell>
+                        <TableCell>
+                          <Badge
+                            className={plate.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                          >
+                            {plate.estado ? 'Activo' : 'Inactivo'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => router.push(`/plates/${plate.codigo}/edit`)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setPlateToDelete(plate.codigo)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
-            <CardFooter className="flex justify-between">
-              <div className="text-sm text-gray-500">
-                Mostrando {filteredPlates.length} de {plates.length} platos
-              </div>
-            </CardFooter>
           </Card>
-
-          <AlertDialog open={plateToDelete !== null} onOpenChange={() => setPlateToDelete(null)}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Esta acción no se puede deshacer. Esto eliminará permanentemente el plato del menú.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction 
-                  onClick={() => plateToDelete && handleDelete(plateToDelete)}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  Eliminar
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </div>
       </div>
+
+      <AlertDialog open={!!plateToDelete} onOpenChange={() => setPlateToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el plato.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => plateToDelete && handleDelete(plateToDelete)}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

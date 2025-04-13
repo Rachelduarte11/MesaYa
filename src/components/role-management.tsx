@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Edit, Trash2, UserPlus2, Loader2 } from "lucide-react"
+import { Search, Edit, Trash2, UserCog, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import { useRoleManagement } from "@/hooks/useRoleManagement"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,62 +18,64 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Cliente } from "@/services/api/types"
+import { useState } from "react"
+import { Rol } from "@/services/api/types"
 import { Badge } from "@/components/ui/badge"
 
-interface ClientManagementProps {
-  clients: Cliente[]
-  loading: boolean
-  error: string | null
-  onSearch: (term: string) => void
-  onDelete: (id: string) => Promise<void>
-  showAll?: boolean
+interface RoleManagementProps {
+  showAll?: boolean;
 }
 
-export function ClientManagement({ 
-  clients = [], 
-  loading, 
-  error, 
-  onSearch, 
-  onDelete,
-  showAll = false
-}: ClientManagementProps) {
+export function RoleManagement({ showAll = false }: RoleManagementProps) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedClient, setSelectedClient] = useState<Cliente | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<Rol | null>(null)
 
-  // Filter clients based on showAll prop
-  const displayedClients = showAll ? clients : clients.filter(client => client.estado === true);
+  const {
+    roles,
+    loading,
+    error,
+    currentPage,
+    totalPages,
+    fetchRoles,
+    fetchActiveRoles,
+    handleSearch,
+    handleDelete,
+    handlePageChange,
+  } = useRoleManagement()
 
   useEffect(() => {
-    console.log('ClientManagement: Clients updated:', clients);
-  }, [clients]);
+    if (showAll) {
+      fetchRoles()
+    } else {
+      fetchActiveRoles()
+    }
+  }, [fetchRoles, fetchActiveRoles, showAll])
 
-  const handleSearch = (term: string) => {
-    console.log('ClientManagement: Handling search with term:', term);
-    setSearchTerm(term);
-    onSearch(term);
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term)
+    handleSearch(term)
   }
 
-  const handleDeleteClick = (client: Cliente) => {
-    setSelectedClient(client);
-    setIsDeleteModalOpen(true);
+  const handleDeleteClick = (role: Rol) => {
+    setSelectedRole(role)
+    setIsDeleteModalOpen(true)
   }
 
   const handleConfirmDelete = async () => {
-    if (selectedClient) {
+    if (selectedRole) {
       try {
-        await onDelete(selectedClient.codigo);
-        setIsDeleteModalOpen(false);
-        setSelectedClient(null);
+        await handleDelete(Number(selectedRole.codigo))
+        setIsDeleteModalOpen(false)
+        setSelectedRole(null)
       } catch (err) {
-        console.error('ClientManagement: Error in handleDelete:', err);
+        console.error('Error deleting role:', err)
       }
     }
   }
 
-  if (loading && !clients.length) {
+  if (loading && !roles.length) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -91,9 +94,9 @@ export function ClientManagement({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{showAll ? "Todos los Clientes" : "Gestión de Clientes"}</CardTitle>
+        <CardTitle>{showAll ? "Todos los Roles" : "Gestión de Roles"}</CardTitle>
         <CardDescription>
-          {showAll ? "Lista completa de clientes" : "Administra los clientes del restaurante"}
+          {showAll ? "Lista completa de roles" : "Administra los roles del sistema"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -101,52 +104,44 @@ export function ClientManagement({
           <div className="relative w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
-              placeholder="Buscar clientes..."
+              placeholder="Buscar roles..."
               value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-8"
             />
           </div>
-          <Button onClick={() => router.push("/clients/add")}>
-            <UserPlus2 className="mr-2 h-4 w-4" />
-            Nuevo Cliente
+          <Button onClick={() => router.push("/settings/role/add")}>
+            <UserCog className="mr-2 h-4 w-4" />
+            Nuevo Rol
           </Button>
         </div>
 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nombre Completo</TableHead>
-              <TableHead>Documento</TableHead>
-              <TableHead>Teléfono</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Dirección</TableHead>
+              <TableHead>Código</TableHead>
+              <TableHead>Nombre</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {displayedClients.length === 0 ? (
+            {roles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4">
-                  No hay clientes disponibles
+                <TableCell colSpan={4} className="text-center py-4">
+                  No hay roles disponibles
                 </TableCell>
               </TableRow>
             ) : (
-              displayedClients.map((client) => (
-                <TableRow key={client.codigo}>
-                  <TableCell>
-                    {client.nombre} {client.apellidoPaterno} {client.apellidoMaterno}
-                  </TableCell>
-                  <TableCell>{client.documento}</TableCell>
-                  <TableCell>{client.telefono}</TableCell>
-                  <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.direccion}</TableCell>
+              roles.map((role) => (
+                <TableRow key={role.codigo}>
+                  <TableCell>{role.codigo}</TableCell>
+                  <TableCell>{role.nombre}</TableCell>
                   <TableCell>
                     <Badge
-                      className={client.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                      className={role.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
                     >
-                      {client.estado ? 'Activo' : 'Inactivo'}
+                      {role.estado ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -154,14 +149,14 @@ export function ClientManagement({
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => router.push(`/clients/${client.codigo}/edit`)}
+                        onClick={() => router.push(`/settings/role/${role.codigo}/edit`)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteClick(client)}
+                        onClick={() => handleDeleteClick(role)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -172,6 +167,30 @@ export function ClientManagement({
             )}
           </TableBody>
         </Table>
+
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center mt-4 space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm">
+              Página {currentPage} de {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </CardContent>
 
       <AlertDialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
@@ -179,7 +198,7 @@ export function ClientManagement({
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el cliente "{selectedClient?.nombre} {selectedClient?.apellidoPaterno}".
+              Esta acción no se puede deshacer. Se eliminará permanentemente el rol "{selectedRole?.nombre}".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -192,5 +211,4 @@ export function ClientManagement({
       </AlertDialog>
     </Card>
   )
-}
-
+} 

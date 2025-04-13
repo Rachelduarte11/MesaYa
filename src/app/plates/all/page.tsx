@@ -8,9 +8,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { platoService } from "@/services/platos/platoService"
 import { Plato } from "@/services/api/types"
 import { Badge } from "@/components/ui/badge"
-import { Loader2 } from "lucide-react"
+import { Loader2, Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Breadcrumb } from "@/components/breadcrumb"
+import { useRouter } from "next/navigation"
 
 export default function AllPlatesPage() {
+  const router = useRouter()
   const [plates, setPlates] = useState<Plato[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -70,6 +74,19 @@ export default function AllPlatesPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
         <div className="flex-1 overflow-auto p-6">
+          <div className="flex justify-between items-center mb-6">
+            <Breadcrumb 
+              items={[
+                { label: "Inicio", href: "/" },
+                { label: "Platos", href: "/plates" },
+                { label: "Todos los Registros", href: "/plates/all" }
+              ]} 
+            />
+            <Button onClick={() => router.push("/plates/add")}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Plato
+            </Button>
+          </div>
           <Card>
             <CardHeader>
               <CardTitle>Todos los Registros de Platos</CardTitle>
@@ -94,7 +111,7 @@ export default function AllPlatesPage() {
                       <TableCell className="font-medium">{plate.nombre}</TableCell>
                       <TableCell>{plate.descripcion}</TableCell>
                       <TableCell>S/. {plate.precio.toFixed(2)}</TableCell>
-                     <TableCell>{plate.tipoPlato.nombre}</TableCell>
+                      <TableCell>{plate.tipoPlato.nombre}</TableCell>
                       <TableCell>
                         <Badge
                           className={plate.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}

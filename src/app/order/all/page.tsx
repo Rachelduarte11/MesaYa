@@ -1,14 +1,14 @@
 'use client';
 
-import { SidebarNav } from "@/components/sidebar-nav"
-import { Header } from "@/components/header"
-import { OrderManagement } from "@/components/order-management"
-import { Breadcrumb } from "@/components/breadcrumb"
-import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
-import { Pedido } from "@/services/api/types"
+import { OrderManagement } from '@/components/order-management';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { SidebarNav } from "@/components/sidebar-nav";
+import { Header } from "@/components/header";
+import { Breadcrumb } from "@/components/breadcrumb";
+import { Pedido } from "@/services/api/types";
 
-export default function OrderPage() {
+export default function AllOrdersPage() {
   const router = useRouter();
 
   const handleEdit = (pedido: Pedido) => {
@@ -22,16 +22,16 @@ export default function OrderPage() {
         <Header />
         <div className="flex-1 overflow-auto p-6">
           <div className="flex justify-between items-center mb-6">
-            <Breadcrumb items={[{ label: "Pedido", href: "/pedido" }, { label: "Ver Pedido" }]} />
+            <Breadcrumb items={[{ label: "Pedido", href: "/pedido" }, { label: "Todos los Pedidos" }]} />
             <Button 
               variant="outline"
               className="text-black border-gray-300 hover:bg-green-600 hover:text-white hover:border-green-600"
-              onClick={() => router.push('/order/all')}
+              onClick={() => router.push('/order')}
             >
-              Ver todos los registros
+              Ver pedidos activos
             </Button>
           </div>
-          <OrderManagement onEdit={handleEdit} showAll={false} />
+          <OrderManagement onEdit={handleEdit} showAll={true} />
         </div>
       </div>
     </div>

@@ -46,8 +46,9 @@ export function SidebarNav() {
       menuKey: "pedidos",
       path: "/order",
       submenuItems: [
+        { icon: Eye, label: "Ver Pedidos", path: "/order" },
         { icon: PlusCircle, label: "Agregar Pedido", path: "/order/add" },
-        { icon: Eye, label: "Ver Pedidos", path: "/order/see" },
+        
         //{ icon: ClipboardList, label: "Detalles de Pedidos", path: "/order/details" },
       ],
     },
