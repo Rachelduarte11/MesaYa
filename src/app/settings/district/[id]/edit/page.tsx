@@ -9,66 +9,53 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
-// Sample district data
-const sampleDistricts = [
-  {
-    id: 1,
-    code: "SJL",
-    name: "San Juan de Lurigancho",
-    province: "Lima",
-    department: "Lima",
-    createdAt: "2024-03-15",
-  },
-  {
-    id: 2,
-    code: "MIR",
-    name: "Miraflores",
-    province: "Lima",
-    department: "Lima",
-    createdAt: "2024-03-15",
-  },
-  {
-    id: 3,
-    code: "SMP",
-    name: "San Martín de Porres",
-    province: "Lima",
-    department: "Lima",
-    createdAt: "2024-03-15",
-  },
-  {
-    id: 4,
-    code: "BAR",
-    name: "Barranco",
-    province: "Lima",
-    department: "Lima",
-    createdAt: "2024-03-15",
-  }
-]
+import { Checkbox } from "@/components/ui/checkbox"
+import { useDistrictManagement } from "@/hooks/useDistrictManagement"
+import { toast } from "@/components/ui/use-toast"
+import { Distrito } from "@/services/api/types"
+import { distritoService } from "@/services/distritos/distritoService"
 
 export default function EditDistrictPage({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const { updateDistrict, loading } = useDistrictManagement()
   const [formData, setFormData] = useState({
-    code: "",
-    name: "",
-    province: "",
-    department: "",
+    nombre: "",
+    descripcion: "",
+    estado: true,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Simulate API call to get district data
-    const district = sampleDistricts.find(d => d.id === parseInt(params.id))
-    if (district) {
-      setFormData({
-        code: district.code,
-        name: district.name,
-        province: district.province,
-        department: district.department,
-      })
+    const fetchDistrict = async () => {
+      try {
+        const district = await distritoService.getByCodigo(params.id)
+        if (district) {
+          setFormData({
+            nombre: district.nombre,
+            descripcion: district.descripcion || "",
+            estado: district.estado,
+          })
+        } else {
+          toast({
+            title: "Error",
+            description: "No se pudo cargar el distrito",
+            variant: "destructive",
+          })
+        }
+      } catch (error) {
+        console.error("Error fetching district:", error)
+        toast({
+          title: "Error",
+          description: "Ocurrió un error al cargar el distrito",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
+      }
     }
-    setIsLoading(false)
+
+    fetchDistrict()
   }, [params.id])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,16 +63,39 @@ export default function EditDistrictPage({ params }: { params: { id: string } })
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, estado: checked }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("District data updated:", formData)
+    try {
+      const result = await updateDistrict(params.id, formData)
+      if (result) {
+        toast({
+          title: "Distrito actualizado",
+          description: "El distrito ha sido actualizado exitosamente",
+        })
+        router.push("/settings/district")
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo actualizar el distrito",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error updating district:", error)
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al actualizar el distrito",
+        variant: "destructive",
+      })
+    } finally {
       setIsSubmitting(false)
-      router.push("/catalog/district")
-    }, 1000)
+    }
   }
 
   if (isLoading) {
@@ -112,8 +122,8 @@ export default function EditDistrictPage({ params }: { params: { id: string } })
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Catálogo", href: "/catalog" }, 
-              { label: "Distritos", href: "/catalog/district" },
+              { label: "Catálogo", href: "/settings" }, 
+              { label: "Distritos", href: "/settings/district" },
               { label: "Editar Distrito" }
             ]} 
           />
@@ -130,60 +140,46 @@ export default function EditDistrictPage({ params }: { params: { id: string } })
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="code">Código</Label>
+                    <Label htmlFor="nombre">Nombre del Distrito</Label>
                     <Input
-                      id="code"
-                      name="code"
-                      value={formData.code}
-                      onChange={handleChange}
-                      placeholder="Ej: SJL"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nombre del Distrito</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
                       onChange={handleChange}
                       placeholder="Ej: San Juan de Lurigancho"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="province">Provincia</Label>
+                    <Label htmlFor="descripcion">Descripción</Label>
                     <Input
-                      id="province"
-                      name="province"
-                      value={formData.province}
+                      id="descripcion"
+                      name="descripcion"
+                      value={formData.descripcion}
                       onChange={handleChange}
-                      placeholder="Ej: Lima"
+                      placeholder="Ej: Distrito ubicado en Lima"
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="department">Departamento</Label>
-                    <Input
-                      id="department"
-                      name="department"
-                      value={formData.department}
-                      onChange={handleChange}
-                      placeholder="Ej: Lima"
-                      required
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="estado" 
+                      checked={formData.estado}
+                      onCheckedChange={handleCheckboxChange}
                     />
+                    <Label htmlFor="estado">Activo</Label>
                   </div>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end space-x-2">
                 <Button 
                   variant="outline" 
-                  onClick={() => router.push("/catalog/district")}
+                  onClick={() => router.push("/settings/district")}
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Guardando..." : "Guardar"}
+                <Button type="submit" disabled={isSubmitting || loading}>
+                  {isSubmitting || loading ? "Guardando..." : "Guardar"}
                 </Button>
               </CardFooter>
             </form>

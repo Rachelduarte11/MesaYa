@@ -9,12 +9,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useDocumentTypeManagement } from "@/hooks/useDocumentTypeManagement"
+import { toast } from "@/components/ui/use-toast"
 
 export default function AddDocumentTypePage() {
   const router = useRouter()
+  const { createDocType } = useDocumentTypeManagement()
   const [formData, setFormData] = useState({
-    code: "",
-    name: "",
+    nombre: "",
+    estado: true,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -23,16 +27,43 @@ export default function AddDocumentTypePage() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, estado: checked }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Document type data submitted:", formData)
+    try {
+      const response = await createDocType({
+        nombre: formData.nombre,
+        estado: formData.estado
+      })
+      
+      if (response) {
+        toast({
+          title: "Tipo de documento creado",
+          description: "El tipo de documento ha sido creado exitosamente.",
+        })
+        router.push("/settings/document-type")
+      } else {
+        toast({
+          title: "Error",
+          description: "Hubo un error al crear el tipo de documento.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error creating document type:", error)
+      toast({
+        title: "Error",
+        description: "Hubo un error al crear el tipo de documento.",
+        variant: "destructive",
+      })
+    } finally {
       setIsSubmitting(false)
-      router.push("/settings/document-type")
-    }, 1000)
+    }
   }
 
   return (
@@ -43,7 +74,7 @@ export default function AddDocumentTypePage() {
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Catálogo", href: "/setting" }, 
+              { label: "Catálogo", href: "/settings" }, 
               { label: "Tipos de Documento", href: "/settings/document-type" },
               { label: "Agregar Tipo de Documento" }
             ]} 
@@ -59,28 +90,25 @@ export default function AddDocumentTypePage() {
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="code">Código</Label>
+                    <Label htmlFor="nombre">Nombre</Label>
                     <Input
-                      id="code"
-                      name="code"
-                      value={formData.code}
-                      onChange={handleChange}
-                      placeholder="Ej: DNI"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nombre</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
                       onChange={handleChange}
                       placeholder="Ej: Documento Nacional de Identidad"
                       required
                     />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="estado"
+                      checked={formData.estado}
+                      onCheckedChange={handleCheckboxChange}
+                    />
+                    <Label htmlFor="estado">Activo</Label>
                   </div>
                 </div>
               </CardContent>

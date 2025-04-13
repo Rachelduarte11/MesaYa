@@ -59,6 +59,7 @@ export interface Sexo {
 export interface Distrito {
   codigo: number;
   nombre: string;
+  descripcion: string;
   estado: boolean;
 }
 
@@ -269,11 +270,13 @@ export interface UpdateTipoPlatoRequest {
 // Distrito types
 export interface CreateDistritoRequest {
   nombre: string;
+  descripcion: string;
   estado: boolean;
 }
 
 export interface UpdateDistritoRequest {
   nombre?: string;
+  descripcion: string;
   estado?: boolean;
 }
 

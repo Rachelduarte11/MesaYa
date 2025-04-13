@@ -9,65 +9,86 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
-// Sample document type data
-const sampleDocumentTypes = [
-  {
-    id: 1,
-    code: "DNI",
-    name: "Documento Nacional de Identidad",
-    createdAt: "2024-03-15",
-  },
-  {
-    id: 2,
-    code: "CE",
-    name: "Carnet de Extranjería",
-    createdAt: "2024-03-15",
-  },
-  {
-    id: 3,
-    code: "PAS",
-    name: "Pasaporte",
-    createdAt: "2024-03-15",
-  }
-]
+import { Checkbox } from "@/components/ui/checkbox"
+import { useDocumentTypeManagement } from "@/hooks/useDocumentTypeManagement"
+import { toast } from "@/components/ui/use-toast"
+import { Loader2 } from "lucide-react"
 
 export default function EditDocumentTypePage({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const { updateDocType, getByCodigo } = useDocumentTypeManagement()
   const [formData, setFormData] = useState({
-    code: "",
-    name: "",
+    nombre: "",
+    estado: false,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Simulate API call to get document type data
-    const documentType = sampleDocumentTypes.find(d => d.id === parseInt(params.id))
-    if (documentType) {
-      setFormData({
-        code: documentType.code,
-        name: documentType.name,
-      })
+    const fetchDocumentType = async () => {
+      try {
+        const documentType = await getByCodigo(params.id)
+        setFormData({
+          nombre: documentType.nombre,
+          estado: documentType.estado,
+        })
+      } catch (error) {
+        console.error("Error fetching document type:", error)
+        toast({
+          title: "Error",
+          description: "Hubo un error al cargar el tipo de documento.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
+      }
     }
-    setIsLoading(false)
-  }, [params.id])
+
+    fetchDocumentType()
+  }, [params.id, getByCodigo])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, estado: checked }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Document type data updated:", formData)
+    try {
+      const response = await updateDocType(params.id, {
+        nombre: formData.nombre,
+        estado: formData.estado
+      })
+      
+      if (response) {
+        toast({
+          title: "Tipo de documento actualizado",
+          description: "El tipo de documento ha sido actualizado exitosamente.",
+        })
+        router.push("/settings/document-type")
+      } else {
+        toast({
+          title: "Error",
+          description: "Hubo un error al actualizar el tipo de documento.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error updating document type:", error)
+      toast({
+        title: "Error",
+        description: "Hubo un error al actualizar el tipo de documento.",
+        variant: "destructive",
+      })
+    } finally {
       setIsSubmitting(false)
-      router.push("/catalog/document-type")
-    }, 1000)
+    }
   }
 
   if (isLoading) {
@@ -78,7 +99,7 @@ export default function EditDocumentTypePage({ params }: { params: { id: string 
           <Header />
           <div className="flex-1 overflow-auto p-6">
             <div className="flex items-center justify-center h-full">
-              <p>Cargando...</p>
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
             </div>
           </div>
         </div>
@@ -94,8 +115,8 @@ export default function EditDocumentTypePage({ params }: { params: { id: string 
         <div className="flex-1 overflow-auto p-6">
           <Breadcrumb 
             items={[
-              { label: "Catálogo", href: "/catalog" }, 
-              { label: "Tipos de Documento", href: "/catalog/document-type" },
+              { label: "Catálogo", href: "/settings" }, 
+              { label: "Tipos de Documento", href: "/settings/document-type" },
               { label: "Editar Tipo de Documento" }
             ]} 
           />
@@ -110,35 +131,32 @@ export default function EditDocumentTypePage({ params }: { params: { id: string 
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="code">Código</Label>
+                    <Label htmlFor="nombre">Nombre</Label>
                     <Input
-                      id="code"
-                      name="code"
-                      value={formData.code}
-                      onChange={handleChange}
-                      placeholder="Ej: DNI"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nombre</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
                       onChange={handleChange}
                       placeholder="Ej: Documento Nacional de Identidad"
                       required
                     />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="estado"
+                      checked={formData.estado}
+                      onCheckedChange={handleCheckboxChange}
+                    />
+                    <Label htmlFor="estado">Activo</Label>
                   </div>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end space-x-2">
                 <Button 
                   variant="outline" 
-                  onClick={() => router.push("/catalog/document-type")}
+                  onClick={() => router.push("/settings/document-type")}
                 >
                   Cancelar
                 </Button>

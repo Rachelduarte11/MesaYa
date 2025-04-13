@@ -121,6 +121,7 @@ export function DistrictManagement({ showAll = false }: DistrictManagementProps)
             <TableRow>
               <TableHead>Código</TableHead>
               <TableHead>Nombre del Distrito</TableHead>
+              <TableHead>Descripción</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
@@ -128,7 +129,7 @@ export function DistrictManagement({ showAll = false }: DistrictManagementProps)
           <TableBody>
             {districts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-4">
+                <TableCell colSpan={5} className="text-center py-4">
                   No hay distritos disponibles
                 </TableCell>
               </TableRow>
@@ -137,6 +138,7 @@ export function DistrictManagement({ showAll = false }: DistrictManagementProps)
                 <TableRow key={district.codigo}>
                   <TableCell>{district.codigo}</TableCell>
                   <TableCell>{district.nombre}</TableCell>
+                  <TableCell>{district.descripcion}</TableCell>
                   <TableCell>
                     <Badge
                       className={district.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
