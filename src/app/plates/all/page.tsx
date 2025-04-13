@@ -8,14 +8,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { platoService } from "@/services/platos/platoService"
 import { Plato } from "@/services/api/types"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Plus } from "lucide-react"
+import { Loader2, Plus, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { useRouter } from "next/navigation"
+import { Input } from "@/components/ui/input"
 
 export default function AllPlatesPage() {
   const router = useRouter()
   const [plates, setPlates] = useState<Plato[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -35,6 +37,13 @@ export default function AllPlatesPage() {
 
     fetchAllPlates()
   }, [])
+
+  const filteredPlates = plates.filter(
+    (plate) =>
+      plate.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      plate.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      plate.tipoPlato.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   if (loading) {
     return (
@@ -82,45 +91,85 @@ export default function AllPlatesPage() {
                 { label: "Todos los Registros", href: "/plates/all" }
               ]} 
             />
-            <Button onClick={() => router.push("/plates/add")}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nuevo Plato
+            <Button 
+              variant="outline"
+              className="text-black border-gray-300 hover:bg-green-600 hover:text-white hover:border-green-600"
+              onClick={() => router.push('/plates')}
+            >
+              Ver platos activos
             </Button>
           </div>
           <Card>
-            <CardHeader>
-              <CardTitle>Todos los Registros de Platos</CardTitle>
-              <CardDescription>
-                Lista completa de todos los platos (activos e inactivos)
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Todos los Registros de Platos</CardTitle>
+                <CardDescription>
+                  Lista completa de todos los platos (activos e inactivos)
+                </CardDescription>
+              </div>
+              <Button onClick={() => router.push("/plates/add")}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Plato
+              </Button>
             </CardHeader>
             <CardContent>
+              <div className="flex items-center justify-between mb-6">
+                <div className="relative w-72">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar platos..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+              </div>
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>ID</TableHead>
                     <TableHead>Nombre</TableHead>
                     <TableHead>Descripción</TableHead>
-                    <TableHead>Precio</TableHead>
                     <TableHead>Tipo</TableHead>
+                    <TableHead>Costo</TableHead>
                     <TableHead>Estado</TableHead>
+                    <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {plates.map((plate) => (
-                    <TableRow key={plate.codigo}>
-                      <TableCell className="font-medium">{plate.nombre}</TableCell>
-                      <TableCell>{plate.descripcion}</TableCell>
-                      <TableCell>S/. {plate.precio.toFixed(2)}</TableCell>
-                      <TableCell>{plate.tipoPlato.nombre}</TableCell>
-                      <TableCell>
-                        <Badge
-                          className={plate.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
-                        >
-                          {plate.estado ? 'Activo' : 'Inactivo'}
-                        </Badge>
+                  {filteredPlates.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-4">
+                        No hay platos disponibles
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    filteredPlates.map((plate) => (
+                      <TableRow key={plate.codigo}>
+                        <TableCell>{plate.codigo}</TableCell>
+                        <TableCell>{plate.nombre}</TableCell>
+                        <TableCell>{plate.descripcion}</TableCell>
+                        <TableCell>{plate.tipoPlato.nombre}</TableCell>
+                        <TableCell>S/. {plate.costo ? plate.costo.toFixed(2) : '0.00'}</TableCell>
+                        <TableCell>
+                          <Badge className={plate.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                            {plate.estado ? 'Activo' : 'Inactivo'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => router.push(`/plates/${plate.codigo}/edit`)}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
