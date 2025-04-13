@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
@@ -10,32 +10,25 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"
+import { DayPicker } from "react-day-picker"
 import { clienteService } from "@/services/clientes/clienteService"
-
-// Sample data for dropdowns
-const documentTypes = [
-  { id: 1, code: "DNI", name: "Documento Nacional de Identidad" },
-  { id: 2, code: "CE", name: "Carnet de Extranjería" },
-  { id: 3, code: "PAS", name: "Pasaporte" }
-]
-
-const districts = [
-  { id: 1, code: "MIR", name: "Miraflores" },
-  { id: 2, code: "SJL", name: "San Juan de Lurigancho" },
-  { id: 3, code: "SMP", name: "San Martín de Porres" },
-  { id: 4, code: "BAR", name: "Barranco" },
-  { id: 5, code: "SUR", name: "Surco" }
-]
-
-const genders = [
-  { id: 1, code: "M", name: "Masculino" },
-  { id: 2, code: "F", name: "Femenino" },
-  { id: 3, code: "O", name: "Otro" }
-]
+import { tipoDocumentoService } from "@/services/tipoDocumentos/tipoDocumentoService"
+import { distritoService } from "@/services/distritos/distritoService"
+import { sexoService } from "@/services/sexos/sexoService"
+import { CreateClienteRequest, TipoDocumento, Distrito, Sexo } from "@/services/api/types"
 
 export default function AddClientPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
+  const [documentTypes, setDocumentTypes] = useState<TipoDocumento[]>([])
+  const [districts, setDistricts] = useState<Distrito[]>([])
+  const [genders, setGenders] = useState<Sexo[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [formData, setFormData] = useState<CreateClienteRequest>({
     nombre: "",
     apellidoPaterno: "",
     apellidoMaterno: "",
@@ -46,24 +39,62 @@ export default function AddClientPage() {
     estado: true,
     fechaNacimiento: "",
     sexo: { codigo: 0 },
-    tipoDocumento: { codigo: 0 },
-    distrito: { codigo: 0 }
+    tipoDocumento: { codigo: 0, nombre: "", estado: true },
+    distrito: { codigo: 0, nombre: "", estado: true }
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [docTypes, dists, sexos] = await Promise.all([
+          tipoDocumentoService.getAllActive(),
+          distritoService.getAllActive(),
+          sexoService.getAllActive()
+        ])
+        setDocumentTypes(docTypes)
+        setDistricts(dists)
+        setGenders(sexos)
+      } catch (err) {
+        console.error("Error fetching dropdown data:", err)
+        setError("Error al cargar los datos. Por favor, intente nuevamente.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  const handleDateChange = (date: Date | undefined) => {
+    if (date) {
+      const formattedDate = format(date, "yyyy-MM-dd")
+      setFormData(prev => ({ ...prev, fechaNacimiento: formattedDate }))
+    }
+  }
+
   const handleSelectChange = (name: string, value: string) => {
     if (name === "sexo") {
-      setFormData(prev => ({ ...prev, sexo: { codigo: parseInt(value) } }))
-    } else if (name === "tipoDocumento.codigo") {
-      setFormData(prev => ({ ...prev, tipoDocumento: { codigo: parseInt(value) } }))
-    } else if (name === "distrito.codigo") {
-      setFormData(prev => ({ ...prev, distrito: { codigo: parseInt(value) } }))
+      const selectedGender = genders.find(g => g.codigo.toString() === value)
+      if (selectedGender) {
+        setFormData(prev => ({ ...prev, sexo: selectedGender }))
+      }
+    } else if (name === "tipoDocumento") {
+      const selectedDocType = documentTypes.find(dt => dt.codigo.toString() === value)
+      if (selectedDocType) {
+        setFormData(prev => ({ ...prev, tipoDocumento: selectedDocType }))
+      }
+    } else if (name === "distrito") {
+      const selectedDistrict = districts.find(d => d.codigo.toString() === value)
+      if (selectedDistrict) {
+        setFormData(prev => ({ ...prev, distrito: selectedDistrict }))
+      }
     }
   }
 
@@ -110,15 +141,15 @@ export default function AddClientPage() {
                     <Label htmlFor="documentType">Tipo de Documento</Label>
                     <Select 
                       value={formData.tipoDocumento.codigo.toString()} 
-                      onValueChange={(value) => handleSelectChange("tipoDocumento.codigo", value)}
+                      onValueChange={(value) => handleSelectChange("tipoDocumento", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione tipo de documento" />
                       </SelectTrigger>
                       <SelectContent>
                         {documentTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.id.toString()}>
-                            {type.name}
+                          <SelectItem key={type.codigo} value={type.codigo.toString()}>
+                            {type.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -168,26 +199,86 @@ export default function AddClientPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {genders.map((gender) => (
-                          <SelectItem key={gender.id} value={gender.id.toString()}>
-                            {gender.name}
+                          <SelectItem key={gender.codigo} value={gender.codigo.toString()}>
+                            {gender.codigo === 1 ? "Masculino" : gender.codigo === 2 ? "Femenino" : "Otro"}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="birthDate">Fecha de Nacimiento</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={`w-full justify-start text-left font-normal ${
+                            !formData.fechaNacimiento && "text-muted-foreground"
+                          }`}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.fechaNacimiento ? (
+                            format(new Date(formData.fechaNacimiento), "PPP", { locale: es })
+                          ) : (
+                            <span>Seleccione una fecha</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <DayPicker
+                          mode="single"
+                          selected={formData.fechaNacimiento ? new Date(formData.fechaNacimiento) : undefined}
+                          onSelect={handleDateChange}
+                          initialFocus
+                          showOutsideDays
+                          captionLayout="dropdown-buttons"
+                          fromYear={1900}
+                          toYear={new Date().getFullYear()}
+                          classNames={{
+                            caption: "flex justify-center pt-1 relative items-center",
+                            caption_label: "text-sm font-medium",
+                            nav: "space-x-1 flex items-center",
+                            nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+                            nav_button_previous: "absolute left-1",
+                            nav_button_next: "absolute right-1",
+                            table: "w-full border-collapse space-y-1",
+                            head_row: "flex",
+                            head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+                            row: "flex w-full mt-2",
+                            cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                            day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
+                            day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                            day_today: "bg-accent text-accent-foreground",
+                            day_outside: "text-muted-foreground opacity-50",
+                            day_disabled: "text-muted-foreground opacity-50",
+                            day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                            day_hidden: "invisible",
+                            dropdown: "p-1 bg-popover text-popover-foreground shadow-md rounded-lg border mt-1",
+                            dropdown_month: "p-2.5 text-sm rounded-md hover:bg-accent",
+                            dropdown_year: "p-2.5 text-sm rounded-md hover:bg-accent",
+                            vhidden: "hidden"
+                          }}
+                          components={{
+                            IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
+                            IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="district">Distrito</Label>
                     <Select 
                       value={formData.distrito.codigo.toString()} 
-                      onValueChange={(value) => handleSelectChange("distrito.codigo", value)}
+                      onValueChange={(value) => handleSelectChange("distrito", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione distrito" />
                       </SelectTrigger>
                       <SelectContent>
                         {districts.map((district) => (
-                          <SelectItem key={district.id} value={district.id.toString()}>
-                            {district.name}
+                          <SelectItem key={district.codigo} value={district.codigo.toString()}>
+                            {district.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
