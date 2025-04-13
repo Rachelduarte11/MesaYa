@@ -58,23 +58,23 @@ const API_ENDPOINTS = {
 
   // TipoDocumento endpoints
   tipoDocumentos: {
-    list: '/api/tipo-documentos',
-    listActive: '/api/tipo-documentos/active',
-    detail: (id: string) => `/api/tipo-documentos/${id}`,
-    create: '/api/tipo-documentos',
-    update: (id: string) => `/api/tipo-documentos/${id}`,
-    delete: (id: string) => `/api/tipo-documentos/${id}`,
-    search: '/api/tipo-documentos/search',
+    list: '/api/tipos-documento',
+    listActive: '/api/tipos-documento/active',
+    detail: (id: string) => `/api/tipos-documento/${id}`,
+    create: '/api/tipos-documento',
+    update: (id: string) => `/api/tipos-documento/${id}`,
+    delete: (id: string) => `/api/tipos-documento/${id}`,
+    search: '/api/tipos-documentos/search',
   },
 
   // TipoPlato endpoints
   tipoPlatos: {
-    list: '/api/tipo-platos',
-    listActive: '/api/tipo-platos/active',
-    detail: (id: string) => `/api/tipo-platos/${id}`,
-    create: '/api/tipo-platos',
-    update: (id: string) => `/api/tipo-platos/${id}`,
-    delete: (id: string) => `/api/tipo-platos/${id}`,
+    list: '/api/tipo-plato',
+    listActive: '/api/tipo-plato/active',
+    detail: (id: string) => `/api/tipo-plato/${id}`,
+    create: '/api/tipo-plato',
+    update: (id: string) => `/api/tipo-plato/${id}`,
+    delete: (id: string) => `/api/tipo-plato/${id}`,
     search: '/api/tipo-platos/search',
   },
 

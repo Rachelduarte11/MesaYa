@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
@@ -11,22 +11,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { clienteService } from "@/services/clientes/clienteService"
+import { tipoDocumentoService } from "@/services/tipoDocumentos/tipoDocumentoService"
+import { distritoService } from "@/services/distritos/distritoService"
+import { CreateClienteRequest, TipoDocumento, Distrito } from "@/services/api/types"
 
-// Sample data for dropdowns
-const documentTypes = [
-  { id: 1, code: "DNI", name: "Documento Nacional de Identidad" },
-  { id: 2, code: "CE", name: "Carnet de Extranjería" },
-  { id: 3, code: "PAS", name: "Pasaporte" }
-]
-
-const districts = [
-  { id: 1, code: "MIR", name: "Miraflores" },
-  { id: 2, code: "SJL", name: "San Juan de Lurigancho" },
-  { id: 3, code: "SMP", name: "San Martín de Porres" },
-  { id: 4, code: "BAR", name: "Barranco" },
-  { id: 5, code: "SUR", name: "Surco" }
-]
-
+// Sample data for genders (this could also be moved to the API if needed)
 const genders = [
   { id: 1, code: "M", name: "Masculino" },
   { id: 2, code: "F", name: "Femenino" },
@@ -35,7 +24,10 @@ const genders = [
 
 export default function AddClientPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
+  const [documentTypes, setDocumentTypes] = useState<TipoDocumento[]>([])
+  const [districts, setDistricts] = useState<Distrito[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [formData, setFormData] = useState<CreateClienteRequest>({
     nombre: "",
     apellidoPaterno: "",
     apellidoMaterno: "",
@@ -46,11 +38,31 @@ export default function AddClientPage() {
     estado: true,
     fechaNacimiento: "",
     sexo: { codigo: 0 },
-    tipoDocumento: { codigo: 0 },
-    distrito: { codigo: 0 }
+    tipoDocumento: { codigo: 0, nombre: "", estado: true },
+    distrito: { codigo: 0, nombre: "", estado: true }
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [docTypes, dists] = await Promise.all([
+          tipoDocumentoService.getAllActive(),
+          distritoService.getAllActive()
+        ])
+        setDocumentTypes(docTypes)
+        setDistricts(dists)
+      } catch (err) {
+        console.error("Error fetching dropdown data:", err)
+        setError("Error al cargar los datos. Por favor, intente nuevamente.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -60,10 +72,16 @@ export default function AddClientPage() {
   const handleSelectChange = (name: string, value: string) => {
     if (name === "sexo") {
       setFormData(prev => ({ ...prev, sexo: { codigo: parseInt(value) } }))
-    } else if (name === "tipoDocumento.codigo") {
-      setFormData(prev => ({ ...prev, tipoDocumento: { codigo: parseInt(value) } }))
-    } else if (name === "distrito.codigo") {
-      setFormData(prev => ({ ...prev, distrito: { codigo: parseInt(value) } }))
+    } else if (name === "tipoDocumento") {
+      const selectedDocType = documentTypes.find(dt => dt.codigo.toString() === value)
+      if (selectedDocType) {
+        setFormData(prev => ({ ...prev, tipoDocumento: selectedDocType }))
+      }
+    } else if (name === "distrito") {
+      const selectedDistrict = districts.find(d => d.codigo.toString() === value)
+      if (selectedDistrict) {
+        setFormData(prev => ({ ...prev, distrito: selectedDistrict }))
+      }
     }
   }
 
@@ -110,15 +128,15 @@ export default function AddClientPage() {
                     <Label htmlFor="documentType">Tipo de Documento</Label>
                     <Select 
                       value={formData.tipoDocumento.codigo.toString()} 
-                      onValueChange={(value) => handleSelectChange("tipoDocumento.codigo", value)}
+                      onValueChange={(value) => handleSelectChange("tipoDocumento", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione tipo de documento" />
                       </SelectTrigger>
                       <SelectContent>
                         {documentTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.id.toString()}>
-                            {type.name}
+                          <SelectItem key={type.codigo} value={type.codigo.toString()}>
+                            {type.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -179,15 +197,15 @@ export default function AddClientPage() {
                     <Label htmlFor="district">Distrito</Label>
                     <Select 
                       value={formData.distrito.codigo.toString()} 
-                      onValueChange={(value) => handleSelectChange("distrito.codigo", value)}
+                      onValueChange={(value) => handleSelectChange("distrito", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione distrito" />
                       </SelectTrigger>
                       <SelectContent>
                         {districts.map((district) => (
-                          <SelectItem key={district.id} value={district.id.toString()}>
-                            {district.name}
+                          <SelectItem key={district.codigo} value={district.codigo.toString()}>
+                            {district.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
