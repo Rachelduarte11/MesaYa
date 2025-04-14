@@ -63,6 +63,7 @@ export default function EditOrderPage() {
             cantidad: detalle.cantidad,
             precioUnitario: detalle.precioUnitario,
             platoId: detalle.platoId,
+            platoNombre: detalle.platoNombre
           }))
       });
     }
@@ -250,7 +251,7 @@ export default function EditOrderPage() {
                 <TableBody>
                   {(formData.detalles || []).map((detalle, index) => (
                     <TableRow key={index}>
-<TableCell>{detalle.platoNombre || 'Plato no encontrado'}</TableCell>
+                    <TableCell>{detalle.platoNombre || 'Plato no encontrado'}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button
