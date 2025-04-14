@@ -7,6 +7,22 @@ import {
   ApiResponse 
 } from '../api/types';
 
+// Define the new request type to match the required JSON structure
+interface NewClientRequest {
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  documento: string;
+  direccion: string;
+  telefono: string;
+  email: string;
+  fechaNacimiento: string;
+  estado: boolean;
+  distritoId: number;
+  sexoId: number;
+  tipoDocumentoId: number;
+}
+
 export const clienteService = {
   // Get all clientes
   async getAll(): Promise<Cliente[]> {
@@ -48,7 +64,7 @@ export const clienteService = {
   },
 
   // Create new cliente
-  async create(cliente: CreateClienteRequest): Promise<Cliente> {
+  async create(cliente: NewClientRequest): Promise<Cliente> {
     console.log('Creating new client:', cliente);
     try {
       const response = await api.post<Cliente>(

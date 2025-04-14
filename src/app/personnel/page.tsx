@@ -30,7 +30,7 @@ export default function StaffManagementPage() {
     error,
     currentPage,
     totalPages,
-    fetchEmployees,
+    fetchActiveEmployees,
     handleSearch,
     handleDelete,
     handlePageChange
@@ -45,15 +45,15 @@ export default function StaffManagementPage() {
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
-      fetchEmployees()
+      fetchActiveEmployees()
     } else {
       debouncedSearch(searchTerm)
     }
-  }, [searchTerm, debouncedSearch, fetchEmployees])
+  }, [searchTerm, debouncedSearch, fetchActiveEmployees])
 
   useEffect(() => {
-    fetchEmployees()
-  }, [fetchEmployees])
+    fetchActiveEmployees()
+  }, [fetchActiveEmployees])
 
   return (
     <div className="flex h-screen bg-gray-100">

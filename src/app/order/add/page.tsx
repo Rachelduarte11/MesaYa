@@ -10,7 +10,7 @@ export default function AgregarPedidoPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
         <div className="flex-1 overflow-auto p-6">
-          <Breadcrumb items={[{ label: "Pedido", href: "/pedido" }, { label: "Agregar Pedido" }]} />
+          <Breadcrumb items={[{ label: "Pedido", href: "/order" }, { label: "Agregar Pedido" }]} />
           <h1 className="text-2xl font-bold mb-6">Agregar Pedido</h1>
           <AddOrder />
         </div>

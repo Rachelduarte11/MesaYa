@@ -20,7 +20,23 @@ import { clienteService } from "@/services/clientes/clienteService"
 import { tipoDocumentoService } from "@/services/tipoDocumento/tipoDocumentoService"
 import { distritoService } from "@/services/distritos/distritoService"
 import { sexoService } from "@/services/sexos/sexoService"
-import { CreateClienteRequest, TipoDocumento, Distrito, Sexo } from "@/services/api/types"
+import { TipoDocumento, Distrito, Sexo } from "@/services/api/types"
+
+// Define the request type to match the required JSON structure
+interface NewClientRequest {
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  documento: string;
+  direccion: string;
+  telefono: string;
+  email: string;
+  fechaNacimiento: string;
+  estado: boolean;
+  distritoId: number;
+  sexoId: number;
+  tipoDocumentoId: number;
+}
 
 export default function AddClientPage() {
   const router = useRouter()
@@ -28,7 +44,7 @@ export default function AddClientPage() {
   const [districts, setDistricts] = useState<Distrito[]>([])
   const [genders, setGenders] = useState<Sexo[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [formData, setFormData] = useState<CreateClienteRequest>({
+  const [formData, setFormData] = useState<NewClientRequest>({
     nombre: "",
     apellidoPaterno: "",
     apellidoMaterno: "",
@@ -38,9 +54,9 @@ export default function AddClientPage() {
     email: "",
     estado: true,
     fechaNacimiento: "",
-    sexo: { codigo: 0 },
-    tipoDocumento: { codigo: 0, nombre: "", estado: true },
-    distrito: { codigo: 0, nombre: "", estado: true }
+    distritoId: 0,
+    sexoId: 0,
+    tipoDocumentoId: 0
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -83,20 +99,11 @@ export default function AddClientPage() {
 
   const handleSelectChange = (name: string, value: string) => {
     if (name === "sexo") {
-      const selectedGender = genders.find(g => g.codigo.toString() === value)
-      if (selectedGender) {
-        setFormData(prev => ({ ...prev, sexo: selectedGender }))
-      }
+      setFormData(prev => ({ ...prev, sexoId: parseInt(value) }))
     } else if (name === "tipoDocumento") {
-      const selectedDocType = documentTypes.find(dt => dt.codigo.toString() === value)
-      if (selectedDocType) {
-        setFormData(prev => ({ ...prev, tipoDocumento: selectedDocType }))
-      }
+      setFormData(prev => ({ ...prev, tipoDocumentoId: parseInt(value) }))
     } else if (name === "distrito") {
-      const selectedDistrict = districts.find(d => d.codigo.toString() === value)
-      if (selectedDistrict) {
-        setFormData(prev => ({ ...prev, distrito: selectedDistrict }))
-      }
+      setFormData(prev => ({ ...prev, distritoId: parseInt(value) }))
     }
   }
 
@@ -142,7 +149,7 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="documentType">Tipo de Documento</Label>
                     <Select 
-                      value={formData.tipoDocumento.codigo.toString()} 
+                      value={formData.tipoDocumentoId.toString()} 
                       onValueChange={(value) => handleSelectChange("tipoDocumento", value)}
                     >
                       <SelectTrigger>
@@ -193,7 +200,7 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="gender">Género</Label>
                     <Select 
-                      value={formData.sexo.codigo.toString()} 
+                      value={formData.sexoId.toString()} 
                       onValueChange={(value) => handleSelectChange("sexo", value)}
                     >
                       <SelectTrigger>
@@ -223,7 +230,7 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="district">Distrito</Label>
                     <Select 
-                      value={formData.distrito.codigo.toString()} 
+                      value={formData.distritoId.toString()} 
                       onValueChange={(value) => handleSelectChange("distrito", value)}
                     >
                       <SelectTrigger>

@@ -22,7 +22,7 @@ export default function OrderPage() {
         <Header />
         <div className="flex-1 overflow-auto p-6">
           <div className="flex justify-between items-center mb-6">
-            <Breadcrumb items={[{ label: "Pedido", href: "/pedido" }, { label: "Ver Pedido" }]} />
+            <Breadcrumb items={[{ label: "Pedido", href: "/order" }, { label: "Ver Pedido" }]} />
             <Button 
               variant="outline"
               className="text-black border-gray-300 hover:bg-green-600 hover:text-white hover:border-green-600"

@@ -16,7 +16,25 @@ import { tipoDocumentoService } from "@/services/tipoDocumento/tipoDocumentoServ
 import { distritoService } from "@/services/distritos/distritoService"
 import { sexoService } from "@/services/sexos/sexoService"
 import { rolService } from "@/services/rol/rolService"
-import { Empleado, TipoDocumento, Distrito, Sexo, Rol } from "@/services/api/types"
+import { TipoDocumento, Distrito, Sexo, Rol } from "@/services/api/types"
+
+// Define the request type to match the required JSON structure
+interface NewEmpleadoRequest {
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  documento: string;
+  direccion: string;
+  telefono: string;
+  email: string;
+  fechaNacimiento: string;
+  estado: boolean;
+  sueldo: number;
+  tipoDocumentoId: number;
+  rolId: number;
+  distritoId: number;
+  fechaIngreso: string;
+}
 
 export default function AddPersonnelPage() {
   const router = useRouter()
@@ -25,7 +43,7 @@ export default function AddPersonnelPage() {
   const [genders, setGenders] = useState<Sexo[]>([])
   const [roles, setRoles] = useState<Rol[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [formData, setFormData] = useState<Partial<Empleado>>({
+  const [formData, setFormData] = useState<NewEmpleadoRequest>({
     nombre: "",
     apellidoPaterno: "",
     apellidoMaterno: "",
@@ -37,9 +55,9 @@ export default function AddPersonnelPage() {
     fechaNacimiento: "",
     fechaIngreso: new Date().toISOString().split('T')[0],
     sueldo: 0,
-    tipoDocumento: { codigo: 0, nombre: "", estado: true },
-    rol: { codigo: 0, nombre: "", estado: true },
-    distrito: { codigo: 0, nombre: "", estado: true }
+    tipoDocumentoId: 0,
+    rolId: 0,
+    distritoId: 0
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -75,20 +93,11 @@ export default function AddPersonnelPage() {
 
   const handleSelectChange = (name: string, value: string) => {
     if (name === "tipoDocumento") {
-      const selectedDocType = documentTypes.find(dt => dt.codigo.toString() === value)
-      if (selectedDocType) {
-        setFormData(prev => ({ ...prev, tipoDocumento: selectedDocType }))
-      }
+      setFormData(prev => ({ ...prev, tipoDocumentoId: parseInt(value) }))
     } else if (name === "rol") {
-      const selectedRole = roles.find(r => r.codigo.toString() === value)
-      if (selectedRole) {
-        setFormData(prev => ({ ...prev, rol: selectedRole }))
-      }
+      setFormData(prev => ({ ...prev, rolId: parseInt(value) }))
     } else if (name === "distrito") {
-      const selectedDistrict = districts.find(d => d.codigo.toString() === value)
-      if (selectedDistrict) {
-        setFormData(prev => ({ ...prev, distrito: selectedDistrict }))
-      }
+      setFormData(prev => ({ ...prev, distritoId: parseInt(value) }))
     }
   }
 
@@ -97,7 +106,7 @@ export default function AddPersonnelPage() {
     setIsSubmitting(true)
     
     try {
-      await empleadoService.create(formData as any)
+      await empleadoService.create(formData)
       router.push("/personnel")
     } catch (err) {
       console.error("Error creating employee:", err)
@@ -199,7 +208,7 @@ export default function AddPersonnelPage() {
                   <div className="space-y-2">
                     <Label htmlFor="tipoDocumento">Tipo de Documento</Label>
                     <Select 
-                      value={formData.tipoDocumento?.codigo.toString()} 
+                      value={formData.tipoDocumentoId.toString()} 
                       onValueChange={(value) => handleSelectChange("tipoDocumento", value)}
                     >
                       <SelectTrigger>
@@ -228,7 +237,7 @@ export default function AddPersonnelPage() {
                   <div className="space-y-2">
                     <Label htmlFor="rol">Rol</Label>
                     <Select 
-                      value={formData.rol?.codigo.toString()} 
+                      value={formData.rolId.toString()} 
                       onValueChange={(value) => handleSelectChange("rol", value)}
                     >
                       <SelectTrigger>
@@ -246,7 +255,7 @@ export default function AddPersonnelPage() {
                   <div className="space-y-2">
                     <Label htmlFor="distrito">Distrito</Label>
                     <Select 
-                      value={formData.distrito?.codigo.toString()} 
+                      value={formData.distritoId.toString()} 
                       onValueChange={(value) => handleSelectChange("distrito", value)}
                     >
                       <SelectTrigger>

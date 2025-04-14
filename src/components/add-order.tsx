@@ -91,7 +91,7 @@ export function AddOrder() {
       setCart([])
       setSelectedEmployee("")
       setSelectedClient("")
-      router.push("/order/see")
+      router.push("/order")
     } catch (err) {
       console.error("Error creating order:", err)
       alert("Error creating order. Please try again.")
