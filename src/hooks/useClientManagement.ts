@@ -117,16 +117,19 @@ export const useClientManagement = () => {
 
   // Search clients
   const searchClients = useCallback(async (query: string) => {
-    console.log('useClientManagement: Starting searchClients with query:', query);
-    setLoading(true);
-    setError(null);
     try {
+      setLoading(true);
+      setError(null);
       const response = await clienteService.search(query);
-      console.log('useClientManagement: Search results:', response);
-      setClients(response);
+      if (response) {
+        setClients(response);
+      } else {
+        setError('No se encontraron resultados');
+        setClients([]);
+      }
     } catch (err) {
-      console.error('useClientManagement: Error searching clients:', err);
       setError('Error al buscar clientes');
+      setClients([]);
     } finally {
       setLoading(false);
     }

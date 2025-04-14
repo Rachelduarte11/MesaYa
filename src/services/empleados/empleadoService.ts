@@ -1,23 +1,6 @@
 import api from '../api/config/axios';
-import { Empleado, UpdateEmpleadoRequest, ApiResponse } from '../api/types';
+import { Empleado, CreateEmpleadoRequest, UpdateEmpleadoRequest, ApiResponse } from '../api/types';
 import API_ENDPOINTS from '../api/config/endpoints';
-
-export interface CreateEmpleadoRequest {
-  nombre: string;
-  apellidoPaterno: string;
-  apellidoMaterno: string;
-  documento: string;
-  direccion: string;
-  telefono: string;
-  email: string;
-  fechaNacimiento: string;
-  fechaIngreso: string;
-  estado: boolean;
-  sueldo: number;
-  tipoDocumentoId: number;
-  rolId: number;
-  distritoId: number;
-}
 
 export const empleadoService = {
   getAll: async (): Promise<Empleado[]> => {
@@ -88,7 +71,7 @@ export const empleadoService = {
     console.log('Searching employees with query:', query);
     try {
       const response = await api.get<Empleado[]>(API_ENDPOINTS.empleados.search, {
-        params: { query }
+        params: { nombre: query }
       });
       console.log('API Response for search:', response);
       return response.data;

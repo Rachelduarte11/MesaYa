@@ -1,21 +1,11 @@
 import api from '../api/config/axios';
 import API_ENDPOINTS from '../api/config/endpoints';
-import { Cliente, UpdateClienteRequest, ApiResponse } from '../api/types';
-
-export interface CreateClienteRequest {
-  nombre: string;
-  apellidoPaterno: string;
-  apellidoMaterno: string;
-  documento: string;
-  direccion: string;
-  telefono: string;
-  email: string;
-  fechaNacimiento: string;
-  estado: boolean;
-  distritoId: number;
-  sexoId: number;
-  tipoDocumentoId: number;
-}
+import { 
+  Cliente, 
+  CreateClienteRequest, 
+  UpdateClienteRequest, 
+  ApiResponse 
+} from '../api/types';
 
 export const clienteService = {
   // Get all clientes
@@ -106,9 +96,9 @@ export const clienteService = {
     console.log('Searching clients with query:', query);
     try {
       const response = await api.get<Cliente[]>(API_ENDPOINTS.clientes.search, {
-        params: { query }
+        params: { nombre: query }
       });
-      console.log('API Response for search:', response.data);
+      console.log('API Response for search:', response);
       return response.data;
     } catch (error) {
       console.error('Error in search:', error);

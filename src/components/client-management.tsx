@@ -24,21 +24,20 @@ interface ClientManagementProps {
   clients: Cliente[]
   loading: boolean
   error: string | null
-  onSearch: (term: string) => void
   onDelete: (id: string) => Promise<void>
   showAll?: boolean
+  searchInputProps?: any
 }
 
 export function ClientManagement({ 
   clients = [], 
   loading, 
   error, 
-  onSearch, 
   onDelete,
-  showAll = false
+  showAll = false,
+  searchInputProps
 }: ClientManagementProps) {
   const router = useRouter()
-  const [searchTerm, setSearchTerm] = useState("")
   const [selectedClient, setSelectedClient] = useState<Cliente | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
@@ -48,12 +47,6 @@ export function ClientManagement({
   useEffect(() => {
     console.log('ClientManagement: Clients updated:', clients);
   }, [clients]);
-
-  const handleSearch = (term: string) => {
-    console.log('ClientManagement: Handling search with term:', term);
-    setSearchTerm(term);
-    onSearch(term);
-  }
 
   const handleDeleteClick = (client: Cliente) => {
     setSelectedClient(client);
@@ -102,8 +95,7 @@ export function ClientManagement({
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               placeholder="Buscar clientes..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
+              {...searchInputProps}
               className="pl-8"
             />
           </div>

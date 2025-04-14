@@ -24,39 +24,30 @@ import { Badge } from "@/components/ui/badge"
 
 interface EmployeeManagementProps {
   showAll?: boolean;
+  searchInputProps?: any;
+  employees: Empleado[];
+  loading: boolean;
+  error: string | null;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onDelete: (codigo: number) => Promise<void>;
 }
 
-export function EmployeeManagement({ showAll = false }: EmployeeManagementProps) {
+export function EmployeeManagement({ 
+  showAll = false, 
+  searchInputProps,
+  employees,
+  loading,
+  error,
+  currentPage,
+  totalPages,
+  onPageChange,
+  onDelete
+}: EmployeeManagementProps) {
   const router = useRouter()
-  const [searchTerm, setSearchTerm] = useState("")
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedEmployee, setSelectedEmployee] = useState<Empleado | null>(null)
-
-  const {
-    employees,
-    loading,
-    error,
-    currentPage,
-    totalPages,
-    fetchEmployees,
-    fetchActiveEmployees,
-    handleSearch,
-    handleDelete,
-    handlePageChange,
-  } = useEmployeeManagement()
-
-  useEffect(() => {
-    if (showAll) {
-      fetchEmployees()
-    } else {
-      fetchActiveEmployees()
-    }
-  }, [fetchEmployees, fetchActiveEmployees, showAll])
-
-  const handleSearchChange = (term: string) => {
-    setSearchTerm(term)
-    handleSearch(term)
-  }
 
   const handleDeleteClick = (employee: Empleado) => {
     setSelectedEmployee(employee)
@@ -66,7 +57,7 @@ export function EmployeeManagement({ showAll = false }: EmployeeManagementProps)
   const handleConfirmDelete = async () => {
     if (selectedEmployee) {
       try {
-        await handleDelete(Number(selectedEmployee.codigo))
+        await onDelete(Number(selectedEmployee.codigo))
         setIsDeleteModalOpen(false)
         setSelectedEmployee(null)
       } catch (err) {
@@ -105,8 +96,7 @@ export function EmployeeManagement({ showAll = false }: EmployeeManagementProps)
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               placeholder="Buscar empleados..."
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              {...searchInputProps}
               className="pl-8"
             />
           </div>
@@ -181,7 +171,7 @@ export function EmployeeManagement({ showAll = false }: EmployeeManagementProps)
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handlePageChange(currentPage - 1)}
+              onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -192,7 +182,7 @@ export function EmployeeManagement({ showAll = false }: EmployeeManagementProps)
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handlePageChange(currentPage + 1)}
+              onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
               <ChevronRight className="h-4 w-4" />

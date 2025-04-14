@@ -28,7 +28,7 @@ export default function AddClientPage() {
   const [districts, setDistricts] = useState<Distrito[]>([])
   const [genders, setGenders] = useState<Sexo[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateClienteRequest>({
     nombre: "",
     apellidoPaterno: "",
     apellidoMaterno: "",
@@ -36,11 +36,11 @@ export default function AddClientPage() {
     direccion: "",
     telefono: "",
     email: "",
-    fechaNacimiento: "",
     estado: true,
-    distritoId: 0,
-    sexoId: 0,
-    tipoDocumentoId: 0
+    fechaNacimiento: "",
+    sexo: { codigo: 0 },
+    tipoDocumento: { codigo: 0, nombre: "", estado: true },
+    distrito: { codigo: 0, nombre: "", estado: true }
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -83,11 +83,20 @@ export default function AddClientPage() {
 
   const handleSelectChange = (name: string, value: string) => {
     if (name === "sexo") {
-      setFormData(prev => ({ ...prev, sexoId: Number(value) }))
+      const selectedGender = genders.find(g => g.codigo.toString() === value)
+      if (selectedGender) {
+        setFormData(prev => ({ ...prev, sexo: selectedGender }))
+      }
     } else if (name === "tipoDocumento") {
-      setFormData(prev => ({ ...prev, tipoDocumentoId: Number(value) }))
+      const selectedDocType = documentTypes.find(dt => dt.codigo.toString() === value)
+      if (selectedDocType) {
+        setFormData(prev => ({ ...prev, tipoDocumento: selectedDocType }))
+      }
     } else if (name === "distrito") {
-      setFormData(prev => ({ ...prev, distritoId: Number(value) }))
+      const selectedDistrict = districts.find(d => d.codigo.toString() === value)
+      if (selectedDistrict) {
+        setFormData(prev => ({ ...prev, distrito: selectedDistrict }))
+      }
     }
   }
 
@@ -133,7 +142,7 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="documentType">Tipo de Documento</Label>
                     <Select 
-                      value={formData.tipoDocumentoId.toString()} 
+                      value={formData.tipoDocumento.codigo.toString()} 
                       onValueChange={(value) => handleSelectChange("tipoDocumento", value)}
                     >
                       <SelectTrigger>
@@ -184,7 +193,7 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="gender">Género</Label>
                     <Select 
-                      value={formData.sexoId.toString()} 
+                      value={formData.sexo.codigo.toString()} 
                       onValueChange={(value) => handleSelectChange("sexo", value)}
                     >
                       <SelectTrigger>
@@ -214,7 +223,7 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="district">Distrito</Label>
                     <Select 
-                      value={formData.distritoId.toString()} 
+                      value={formData.distrito.codigo.toString()} 
                       onValueChange={(value) => handleSelectChange("distrito", value)}
                     >
                       <SelectTrigger>

@@ -65,7 +65,7 @@ export const platoService = {
   search: async (query: string): Promise<Plato[]> => {
     try {
       const response = await api.get(API_ENDPOINTS.platos.search, {
-        params: { query }
+        params: { nombre: query }
       });
       return response.data;
     } catch (error) {

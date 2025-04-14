@@ -25,7 +25,7 @@ export default function AddPersonnelPage() {
   const [genders, setGenders] = useState<Sexo[]>([])
   const [roles, setRoles] = useState<Rol[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Partial<Empleado>>({
     nombre: "",
     apellidoPaterno: "",
     apellidoMaterno: "",
@@ -33,13 +33,13 @@ export default function AddPersonnelPage() {
     direccion: "",
     telefono: "",
     email: "",
+    estado: true,
     fechaNacimiento: "",
     fechaIngreso: new Date().toISOString().split('T')[0],
-    estado: true,
     sueldo: 0,
-    tipoDocumentoId: 0,
-    rolId: 0,
-    distritoId: 0
+    tipoDocumento: { codigo: 0, nombre: "", estado: true },
+    rol: { codigo: 0, nombre: "", estado: true },
+    distrito: { codigo: 0, nombre: "", estado: true }
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -75,11 +75,20 @@ export default function AddPersonnelPage() {
 
   const handleSelectChange = (name: string, value: string) => {
     if (name === "tipoDocumento") {
-      setFormData(prev => ({ ...prev, tipoDocumentoId: Number(value) }))
+      const selectedDocType = documentTypes.find(dt => dt.codigo.toString() === value)
+      if (selectedDocType) {
+        setFormData(prev => ({ ...prev, tipoDocumento: selectedDocType }))
+      }
     } else if (name === "rol") {
-      setFormData(prev => ({ ...prev, rolId: Number(value) }))
+      const selectedRole = roles.find(r => r.codigo.toString() === value)
+      if (selectedRole) {
+        setFormData(prev => ({ ...prev, rol: selectedRole }))
+      }
     } else if (name === "distrito") {
-      setFormData(prev => ({ ...prev, distritoId: Number(value) }))
+      const selectedDistrict = districts.find(d => d.codigo.toString() === value)
+      if (selectedDistrict) {
+        setFormData(prev => ({ ...prev, distrito: selectedDistrict }))
+      }
     }
   }
 
@@ -190,7 +199,7 @@ export default function AddPersonnelPage() {
                   <div className="space-y-2">
                     <Label htmlFor="tipoDocumento">Tipo de Documento</Label>
                     <Select 
-                      value={formData.tipoDocumentoId.toString()} 
+                      value={formData.tipoDocumento?.codigo.toString()} 
                       onValueChange={(value) => handleSelectChange("tipoDocumento", value)}
                     >
                       <SelectTrigger>
@@ -219,7 +228,7 @@ export default function AddPersonnelPage() {
                   <div className="space-y-2">
                     <Label htmlFor="rol">Rol</Label>
                     <Select 
-                      value={formData.rolId.toString()} 
+                      value={formData.rol?.codigo.toString()} 
                       onValueChange={(value) => handleSelectChange("rol", value)}
                     >
                       <SelectTrigger>
@@ -237,7 +246,7 @@ export default function AddPersonnelPage() {
                   <div className="space-y-2">
                     <Label htmlFor="distrito">Distrito</Label>
                     <Select 
-                      value={formData.distritoId.toString()} 
+                      value={formData.distrito?.codigo.toString()} 
                       onValueChange={(value) => handleSelectChange("distrito", value)}
                     >
                       <SelectTrigger>
@@ -293,6 +302,18 @@ export default function AddPersonnelPage() {
                       name="fechaNacimiento"
                       type="date"
                       value={formData.fechaNacimiento}
+                      onChange={handleChange}
+                      required
+                      max={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="fechaIngreso">Fecha de Ingreso</Label>
+                    <Input
+                      id="fechaIngreso"
+                      name="fechaIngreso"
+                      type="date"
+                      value={formData.fechaIngreso}
                       onChange={handleChange}
                       required
                       max={new Date().toISOString().split('T')[0]}

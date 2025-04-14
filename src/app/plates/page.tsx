@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
 import { Breadcrumb } from "@/components/breadcrumb"
@@ -23,38 +24,61 @@ import {
 import { platoService } from "@/services/platos/platoService"
 import { Plato } from "@/services/api/types"
 import { Badge } from "@/components/ui/badge"
+import debounce from "lodash/debounce"
+
+type SearchFormData = {
+  search: string
+}
 
 export default function PlatesPage() {
   const router = useRouter()
   const [plates, setPlates] = useState<Plato[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [plateToDelete, setPlateToDelete] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchPlates = async () => {
-      try {
-        setLoading(true)
-        const data = await platoService.getAllActive()
-        setPlates(data)
-      } catch (err) {
-        setError("Error al cargar los platos")
-        console.error("Error fetching plates:", err)
-      } finally {
-        setLoading(false)
-      }
+  const { register, watch } = useForm<SearchFormData>({
+    defaultValues: {
+      search: ""
     }
+  })
 
-    fetchPlates()
+  const searchTerm = watch("search")
+
+  const fetchPlates = useCallback(async (query?: string) => {
+    try {
+      setLoading(true)
+      const data = query 
+        ? await platoService.search(query)
+        : await platoService.getAllActive()
+      setPlates(data)
+    } catch (err) {
+      setError("Error al cargar los platos")
+      console.error("Error fetching plates:", err)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  const filteredPlates = plates.filter(
-    (plate) =>
-      plate.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      plate.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      plate.tipoPlato.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce((query: string) => {
+      fetchPlates(query)
+    }, 500),
+    [fetchPlates]
   )
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      fetchPlates()
+    } else {
+      debouncedSearch(searchTerm)
+    }
+  }, [searchTerm, debouncedSearch, fetchPlates])
+
+  useEffect(() => {
+    fetchPlates()
+  }, [fetchPlates])
 
   const handleDelete = async (codigo: string) => {
     try {
@@ -137,8 +161,7 @@ export default function PlatesPage() {
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Buscar platos..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    {...register("search")}
                     className="pl-8"
                   />
                 </div>
@@ -156,14 +179,14 @@ export default function PlatesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredPlates.length === 0 ? (
+                  {plates.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-4">
                         No hay platos disponibles
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredPlates.map((plate) => (
+                    plates.map((plate) => (
                       <TableRow key={plate.codigo}>
                         <TableCell>{plate.codigo}</TableCell>
                         <TableCell>{plate.nombre}</TableCell>

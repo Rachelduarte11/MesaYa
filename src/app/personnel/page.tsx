@@ -6,9 +6,54 @@ import { EmployeeManagement } from "@/components/employee-management"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { Breadcrumb } from "@/components/breadcrumb"
+import { useForm } from "react-hook-form"
+import { useCallback, useEffect } from "react"
+import { useEmployeeManagement } from "@/hooks/useEmployeeManagement"
+import debounce from "lodash/debounce"
+
+type SearchFormData = {
+  search: string
+}
 
 export default function StaffManagementPage() {
   const router = useRouter()
+  const { register, watch } = useForm<SearchFormData>({
+    defaultValues: {
+      search: ""
+    }
+  })
+
+  const searchTerm = watch("search")
+  const { 
+    employees,
+    loading,
+    error,
+    currentPage,
+    totalPages,
+    fetchEmployees,
+    handleSearch,
+    handleDelete,
+    handlePageChange
+  } = useEmployeeManagement()
+
+  const debouncedSearch = useCallback(
+    debounce((query: string) => {
+      handleSearch(query)
+    }, 500),
+    [handleSearch]
+  )
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      fetchEmployees()
+    } else {
+      debouncedSearch(searchTerm)
+    }
+  }, [searchTerm, debouncedSearch, fetchEmployees])
+
+  useEffect(() => {
+    fetchEmployees()
+  }, [fetchEmployees])
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -31,7 +76,16 @@ export default function StaffManagementPage() {
               Ver todos los registros
             </Button>
           </div>
-          <EmployeeManagement />
+          <EmployeeManagement 
+            employees={employees}
+            loading={loading}
+            error={error}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            onDelete={handleDelete}
+            searchInputProps={register("search")} 
+          />
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from "react"
+import { useEffect, useCallback } from "react"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
 import { ClientManagement } from "@/components/client-management"
@@ -8,9 +8,22 @@ import { useClientManagement } from "@/hooks/useClientManagement"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { Breadcrumb } from "@/components/breadcrumb"
+import { useForm } from "react-hook-form"
+import debounce from "lodash/debounce"
+
+type SearchFormData = {
+  search: string
+}
 
 export default function ClientManagementPage() {
   const router = useRouter()
+  const { register, watch } = useForm<SearchFormData>({
+    defaultValues: {
+      search: ""
+    }
+  })
+
+  const searchTerm = watch("search")
   const {
     loading,
     error,
@@ -20,17 +33,24 @@ export default function ClientManagementPage() {
     searchClients
   } = useClientManagement()
 
-  useEffect(() => {
-    fetchClients();
-  }, []);
+  const debouncedSearch = useCallback(
+    debounce((query: string) => {
+      searchClients(query)
+    }, 500),
+    [searchClients]
+  )
 
-  const handleSearch = (term: string) => {
-    if (term.trim() === '') {
-      fetchClients();
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      fetchClients()
     } else {
-      searchClients(term);
+      debouncedSearch(searchTerm)
     }
-  }
+  }, [searchTerm, debouncedSearch, fetchClients])
+
+  useEffect(() => {
+    fetchClients()
+  }, [fetchClients])
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -57,8 +77,8 @@ export default function ClientManagementPage() {
             clients={clients}
             loading={loading}
             error={error}
-            onSearch={handleSearch}
             onDelete={deleteClient}
+            searchInputProps={register("search")}
           />
         </div>
       </div>

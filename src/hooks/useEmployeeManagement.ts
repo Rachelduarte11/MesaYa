@@ -7,6 +7,7 @@ export const useEmployeeManagement = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isSearching, setIsSearching] = useState(false);
   const itemsPerPage = 5;
 
   const fetchEmployees = useCallback(async () => {
@@ -63,6 +64,7 @@ export const useEmployeeManagement = () => {
     try {
       setLoading(true);
       setError(null);
+      setIsSearching(true);
       const response = await empleadoService.search(query);
       if (response) {
         setEmployees(response);
@@ -96,7 +98,7 @@ export const useEmployeeManagement = () => {
   const totalPages = Math.ceil(employees.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentEmployees = employees.slice(startIndex, endIndex);
+  const currentEmployees = isSearching ? employees : employees.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
