@@ -1,11 +1,21 @@
 import api from '../api/config/axios';
 import API_ENDPOINTS from '../api/config/endpoints';
-import { 
-  Cliente, 
-  CreateClienteRequest, 
-  UpdateClienteRequest, 
-  ApiResponse 
-} from '../api/types';
+import { Cliente, UpdateClienteRequest, ApiResponse } from '../api/types';
+
+export interface CreateClienteRequest {
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  documento: string;
+  direccion: string;
+  telefono: string;
+  email: string;
+  fechaNacimiento: string;
+  estado: boolean;
+  distritoId: number;
+  sexoId: number;
+  tipoDocumentoId: number;
+}
 
 export const clienteService = {
   // Get all clientes

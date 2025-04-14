@@ -16,9 +16,9 @@ export function useOrderData() {
       try {
         setLoading(true)
         const [clientsData, employeesData, platosData] = await Promise.all([
-          clienteService.getAll(),
-          empleadoService.getAll(),
-          platoService.getAll()
+          clienteService.getAllActive(),
+          empleadoService.getAllActive(),
+          platoService.getAllActive()
         ])
         setClients(clientsData)
         setEmployees(employeesData)
