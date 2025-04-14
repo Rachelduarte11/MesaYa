@@ -25,6 +25,8 @@ export default function EditOrderPage() {
     codigo: Number(id),
     estado: true,
     estadoPedido: 'Pendiente',
+    clienteId: 0,
+    empleadoId: 0,
     detalles: []
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,15 +52,17 @@ export default function EditOrderPage() {
     if (currentPedido) {
       setFormData({
         codigo: currentPedido.codigo,
+        nombre: currentPedido.nombre,
         estado: currentPedido.estado,
         estadoPedido: currentPedido.estadoPedido,
+        clienteId: currentPedido.clienteId,
+        empleadoId: currentPedido.empleadoId,
         detalles: currentPedido.detalles
           .filter(detalle => detalle.estado)
           .map(detalle => ({
             cantidad: detalle.cantidad,
             precioUnitario: detalle.precioUnitario,
             platoId: detalle.platoId,
-            platoNombre: detalle.platoNombre
           }))
       });
     }
@@ -119,7 +123,7 @@ export default function EditOrderPage() {
         ...formData,
         detalles: formData.detalles || []
       });
-      router.push('/order/see');
+      router.push('/order');
     } catch (error) {
       console.error('Error updating order:', error);
     }
@@ -244,47 +248,44 @@ export default function EditOrderPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {(formData.detalles || []).map((detalle, index) => {
-                    //const plato = platos.find(p => p.codigo === detalle.platoId.toString());
-                    return (
-                      <TableRow key={index}>
-                        <TableCell>{detalle.platoNombre || 'Plato no encontrado'}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleUpdateQuantity(index, detalle.cantidad - 1)}
-                            >
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                            <span>{detalle.cantidad}</span>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleUpdateQuantity(index, detalle.cantidad + 1)}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell>S/. {detalle.precioUnitario.toFixed(2)}</TableCell>
-                        <TableCell>S/. {(detalle.cantidad * detalle.precioUnitario).toFixed(2)}</TableCell>
-                        <TableCell>
+                  {(formData.detalles || []).map((detalle, index) => (
+                    <TableRow key={index}>
+<TableCell>{detalle.platoNombre || 'Plato no encontrado'}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
                           <Button
                             type="button"
                             variant="outline"
                             size="icon"
-                            onClick={() => handleRemovePlato(index)}
+                            onClick={() => handleUpdateQuantity(index, detalle.cantidad - 1)}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Minus className="h-4 w-4" />
                           </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                          <span>{detalle.cantidad}</span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleUpdateQuantity(index, detalle.cantidad + 1)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>S/. {detalle.precioUnitario.toFixed(2)}</TableCell>
+                      <TableCell>S/. {(detalle.cantidad * detalle.precioUnitario).toFixed(2)}</TableCell>
+                      <TableCell>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleRemovePlato(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
@@ -293,7 +294,7 @@ export default function EditOrderPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push('/order/see')}
+                onClick={() => router.push('/order')}
               >
                 Cancelar
               </Button>
@@ -314,7 +315,7 @@ export default function EditOrderPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => router.push('/order/see')}>
+            <AlertDialogAction onClick={() => router.push('/order')}>
               Volver a la lista
             </AlertDialogAction>
           </AlertDialogFooter>

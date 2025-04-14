@@ -37,9 +37,22 @@ export const pedidoService = {
 
   // Update pedido
   async update(codigo: number, pedido: UpdatePedidoRequest): Promise<Pedido> {
+    const updateData = {
+      nombre: pedido.nombre,
+      estado: pedido.estado,
+      estadoPedido: pedido.estadoPedido,
+      clienteId: pedido.clienteId,
+      empleadoId: pedido.empleadoId,
+      detalles: pedido.detalles?.map(detalle => ({
+        cantidad: detalle.cantidad,
+        precioUnitario: detalle.precioUnitario,
+        platoId: detalle.platoId
+      })) || []
+    };
+
     const response = await api.put<Pedido>(
       API_ENDPOINTS.pedidos.update(codigo.toString()),
-      pedido
+      updateData
     );
     return response.data;
   },
