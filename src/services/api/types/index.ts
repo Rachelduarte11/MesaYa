@@ -88,7 +88,7 @@ export interface Empleado {
   distrito: Distrito;
 }
 
-export interface CreateEmpleadoRequest {
+export interface NewEmpleadoRequest {
   nombre: string;
   apellidoPaterno: string;
   apellidoMaterno: string;
@@ -97,15 +97,15 @@ export interface CreateEmpleadoRequest {
   telefono: string;
   email: string;
   fechaNacimiento: string;
-  fechaIngreso: string;
   estado: boolean;
   sueldo: number;
-  tipoDocumento: TipoDocumento;
-  rol: Rol;
-  distrito: Distrito;
+  tipoDocumentoId: number;
+  rolId: number;
+  distritoId: number;
+  fechaIngreso: string;
 }
 
-export interface UpdateEmpleadoRequest extends Partial<CreateEmpleadoRequest> {
+export interface UpdateEmpleadoRequest extends Partial<NewEmpleadoRequest> {
   codigo: string;
 }
 
