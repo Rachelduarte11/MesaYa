@@ -14,7 +14,7 @@ import { empleadoService } from "@/services/empleados/empleadoService"
 import { tipoDocumentoService } from "@/services/tipoDocumento/tipoDocumentoService"
 import { distritoService } from "@/services/distritos/distritoService"
 import { sexoService } from "@/services/sexos/sexoService"
-import { rolService } from "@/services/roles/rolService"
+import { rolService } from "@/services/rol/rolService"
 import { Empleado, TipoDocumento, Distrito, Sexo, Rol } from "@/services/api/types"
 
 export default function EditPersonnelPage({ params }: { params: { id: string } }) {
