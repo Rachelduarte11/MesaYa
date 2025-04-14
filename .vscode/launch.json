@@ -1,0 +1,60 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Next.js: debug",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev",
+      "skipFiles": [
+        "<node_internals>/**",
+        "node_modules/**",
+        ".next/**"
+      ],
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Next.js: debug server-side",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev -- --inspect",
+      "skipFiles": [
+        "<node_internals>/**",
+        "node_modules/**",
+        ".next/**"
+      ],
+      "internalConsoleOptions": "neverOpen",
+      "sourceMaps": true,
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/.next/**/*.js"
+      ],
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--inspect"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    {
+      "name": "Next.js: debug client-side",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}",
+      "sourceMapPathOverrides": {
+        "webpack:///./~/*": "${webRoot}/node_modules/*",
+        "webpack:///./*": "${webRoot}/*",
+        "webpack:///*": "*"
+      },
+      "skipFiles": [
+        "node_modules/**",
+        ".next/**"
+      ]
+    }
+  ]
+} 

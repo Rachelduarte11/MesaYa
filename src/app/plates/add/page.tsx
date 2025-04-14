@@ -1,187 +1,216 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
-import { Header } from "@/components/header"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Image as ImageIcon } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { platoService } from "@/services/platos/platoService"
+import { tipoPlatoService } from "@/services/tipoPlatos/tipoPlatoService"
+import { CreatePlatoRequest, TipoPlato } from "@/services/api/types"
+import { Loader2 } from "lucide-react"
 
 export default function AddPlatePage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    name: "",
-    category: "",
-    price: "",
-    cost: "",
-    type: "",
-    description: "",
-    image: "",
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [tipoPlatos, setTipoPlatos] = useState<TipoPlato[]>([])
+  const [formData, setFormData] = useState<CreatePlatoRequest>({
+    nombre: "",
+    descripcion: "",
+    precio: 0,
+    estado: true,
+    tipoPlato: {
+      codigo: 0
+    }
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    const fetchTipoPlatos = async () => {
+      try {
+        setLoading(true)
+        const response = await tipoPlatoService.getAllActive()
+        setTipoPlatos(response)
+        // Set default tipoPlato if available
+        if (response.length > 0) {
+          setFormData(prev => ({
+            ...prev,
+            tipoPlato: {
+              codigo: response[0].codigo
+            }
+          }))
+        }
+      } catch (err) {
+        setError("Error al cargar los tipos de plato")
+        console.error("Error fetching plate types:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTipoPlatos()
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    try {
+      await platoService.create(formData)
+      router.push("/plates")
+    } catch (err) {
+      setError("Error al crear el plato")
+      console.error("Error creating plate:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === "precio" ? parseFloat(value) : value
+    }))
   }
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleSelectChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tipoPlato: {
+        codigo: parseInt(value)
+      }
+    }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Plate data submitted:", formData)
-      setIsSubmitting(false)
-      router.push("/plates")
-    }, 1000)
+  if (loading && tipoPlatos.length === 0) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-auto p-6">
+            <div className="flex justify-center items-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="flex h-screen bg-gray-100">
       <SidebarNav />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
         <div className="flex-1 overflow-auto p-6">
-          <Breadcrumb 
-            items={[
-              { label: "Platos", href: "/plates" }, 
-              { label: "Agregar Plato" }
-            ]} 
-          />
-          <h1 className="text-2xl font-bold mb-6">Agregar Nuevo Plato</h1>
-          
+          <div className="flex justify-between items-center mb-6">
+            <Breadcrumb 
+              items={[
+                { label: "Inicio", href: "/" },
+                { label: "Platos", href: "/plates" },
+                { label: "Nuevo Plato", href: "/plates/add" }
+              ]} 
+            />
+          </div>
           <Card>
             <CardHeader>
-              <CardTitle>Información del Plato</CardTitle>
+              <CardTitle>Nuevo Plato</CardTitle>
               <CardDescription>
-                Complete los datos del nuevo plato
+                Complete los datos para crear un nuevo plato
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {error && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    {error}
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nombre</Label>
+                    <Label htmlFor="nombre">Nombre</Label>
                     <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
                       onChange={handleChange}
-                      placeholder="Nombre del plato"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="category">Categoría</Label>
-                    <Select 
-                      value={formData.category} 
-                      onValueChange={(value) => handleSelectChange("category", value)}
+                    <Label htmlFor="tipoPlato">Tipo de Plato</Label>
+                    <Select
+                      value={formData.tipoPlato.codigo.toString()}
+                      onValueChange={handleSelectChange}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccione una categoría" />
+                        <SelectValue placeholder="Seleccionar tipo de plato" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="appetizers">Entradas</SelectItem>
-                        <SelectItem value="mainCourses">Platos Principales</SelectItem>
-                        <SelectItem value="desserts">Postres</SelectItem>
-                        <SelectItem value="beverages">Bebidas</SelectItem>
-                        <SelectItem value="specialties">Especialidades</SelectItem>
+                        {tipoPlatos.map((tipo) => (
+                          <SelectItem key={tipo.codigo} value={tipo.codigo.toString()}>
+                            {tipo.nombre}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="price">Precio de Venta</Label>
-                    <Input
-                      id="price"
-                      name="price"
-                      type="number"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={handleChange}
-                      placeholder="0.00"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cost">Costo</Label>
-                    <Input
-                      id="cost"
-                      name="cost"
-                      type="number"
-                      step="0.01"
-                      value={formData.cost}
-                      onChange={handleChange}
-                      placeholder="0.00"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="type">Tipo</Label>
-                    <Select 
-                      value={formData.type} 
-                      onValueChange={(value) => handleSelectChange("type", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="veg">Vegetariano</SelectItem>
-                        <SelectItem value="nonVeg">No Vegetariano</SelectItem>
-                        <SelectItem value="vegan">Vegano</SelectItem>
-                        <SelectItem value="glutenFree">Sin Gluten</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="image">URL de la Imagen</Label>
-                    <div className="flex">
-                      <Input
-                        id="image"
-                        name="image"
-                        value={formData.image}
-                        onChange={handleChange}
-                        placeholder="URL de la imagen"
-                      />
-                      <Button type="button" variant="outline" className="ml-2">
-                        <ImageIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Descripción</Label>
+                  <Label htmlFor="descripcion">Descripción</Label>
                   <Textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
+                    id="descripcion"
+                    name="descripcion"
+                    value={formData.descripcion}
                     onChange={handleChange}
-                    placeholder="Descripción detallada del plato"
-                    rows={4}
                     required
                   />
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="precio">Precio (S/.)</Label>
+                    <Input
+                      id="precio"
+                      name="precio"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.precio}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+              <CardFooter className="flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => router.push("/plates")}
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Guardando..." : "Guardar Plato"}
+                <Button type="submit" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    "Guardar"
+                  )}
                 </Button>
               </CardFooter>
             </form>

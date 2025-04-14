@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Header } from "@/components/header"
@@ -10,62 +10,116 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"
+import { DayPicker } from "react-day-picker"
+import { clienteService } from "@/services/clientes/clienteService"
+import { tipoDocumentoService } from "@/services/tipoDocumento/tipoDocumentoService"
+import { distritoService } from "@/services/distritos/distritoService"
+import { sexoService } from "@/services/sexos/sexoService"
+import { TipoDocumento, Distrito, Sexo } from "@/services/api/types"
 
-// Sample data for dropdowns
-const documentTypes = [
-  { id: 1, code: "DNI", name: "Documento Nacional de Identidad" },
-  { id: 2, code: "CE", name: "Carnet de Extranjería" },
-  { id: 3, code: "PAS", name: "Pasaporte" }
-]
-
-const districts = [
-  { id: 1, code: "MIR", name: "Miraflores" },
-  { id: 2, code: "SJL", name: "San Juan de Lurigancho" },
-  { id: 3, code: "SMP", name: "San Martín de Porres" },
-  { id: 4, code: "BAR", name: "Barranco" },
-  { id: 5, code: "SUR", name: "Surco" }
-]
-
-const genders = [
-  { id: 1, code: "M", name: "Masculino" },
-  { id: 2, code: "F", name: "Femenino" },
-  { id: 3, code: "O", name: "Otro" }
-]
+// Define the request type to match the required JSON structure
+interface NewClientRequest {
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  documento: string;
+  direccion: string;
+  telefono: string;
+  email: string;
+  fechaNacimiento: string;
+  estado: boolean;
+  distritoId: number;
+  sexoId: number;
+  tipoDocumentoId: number;
+}
 
 export default function AddClientPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    documentType: "",
-    documentNumber: "",
-    name: "",
-    lastName: "",
-    gender: "",
-    district: "",
-    address: "",
-    phone: "",
+  const [documentTypes, setDocumentTypes] = useState<TipoDocumento[]>([])
+  const [districts, setDistricts] = useState<Distrito[]>([])
+  const [genders, setGenders] = useState<Sexo[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [formData, setFormData] = useState<NewClientRequest>({
+    nombre: "",
+    apellidoPaterno: "",
+    apellidoMaterno: "",
+    documento: "",
+    direccion: "",
+    telefono: "",
     email: "",
+    estado: true,
+    fechaNacimiento: "",
+    distritoId: 0,
+    sexoId: 0,
+    tipoDocumentoId: 0
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [docTypes, dists, sexos] = await Promise.all([
+          tipoDocumentoService.getAllActive(),
+          distritoService.getAllActive(),
+          sexoService.getAllActive()
+        ])
+        setDocumentTypes(docTypes)
+        setDistricts(dists)
+        setGenders(sexos)
+      } catch (err) {
+        console.error("Error fetching dropdown data:", err)
+        setError("Error al cargar los datos. Por favor, intente nuevamente.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleDateChange = (date: Date | undefined) => {
+    if (date) {
+      const formattedDate = format(date, "yyyy-MM-dd")
+      setFormData(prev => ({ ...prev, fechaNacimiento: formattedDate }))
+    } else {
+      setFormData(prev => ({ ...prev, fechaNacimiento: "" }))
+    }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSelectChange = (name: string, value: string) => {
+    if (name === "sexo") {
+      setFormData(prev => ({ ...prev, sexoId: parseInt(value) }))
+    } else if (name === "tipoDocumento") {
+      setFormData(prev => ({ ...prev, tipoDocumentoId: parseInt(value) }))
+    } else if (name === "distrito") {
+      setFormData(prev => ({ ...prev, distritoId: parseInt(value) }))
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Client data submitted:", formData)
-      setIsSubmitting(false)
+    try {
+      await clienteService.create(formData)
       router.push("/clients")
-    }, 1000)
+    } catch (err) {
+      console.error("Error creating client:", err)
+      setError("Error al crear el cliente. Por favor, intente nuevamente.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -95,16 +149,16 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="documentType">Tipo de Documento</Label>
                     <Select 
-                      value={formData.documentType} 
-                      onValueChange={(value) => handleSelectChange("documentType", value)}
+                      value={formData.tipoDocumentoId.toString()} 
+                      onValueChange={(value) => handleSelectChange("tipoDocumento", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione tipo de documento" />
                       </SelectTrigger>
                       <SelectContent>
                         {documentTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.code}>
-                            {type.name}
+                          <SelectItem key={type.codigo} value={type.codigo.toString()}>
+                            {type.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -113,9 +167,9 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="documentNumber">Número de Documento</Label>
                     <Input
-                      id="documentNumber"
-                      name="documentNumber"
-                      value={formData.documentNumber}
+                      id="documento"
+                      name="documento"
+                      value={formData.documento}
                       onChange={handleChange}
                       placeholder="Ej: 12345678"
                       required
@@ -124,9 +178,9 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="name">Nombre</Label>
                     <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
                       onChange={handleChange}
                       placeholder="Ej: Juan"
                       required
@@ -135,9 +189,9 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Apellido</Label>
                     <Input
-                      id="lastName"
-                      name="lastName"
-                      value={formData.lastName}
+                      id="apellidoPaterno"
+                      name="apellidoPaterno"
+                      value={formData.apellidoPaterno}
                       onChange={handleChange}
                       placeholder="Ej: Pérez"
                       required
@@ -146,34 +200,46 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="gender">Género</Label>
                     <Select 
-                      value={formData.gender} 
-                      onValueChange={(value) => handleSelectChange("gender", value)}
+                      value={formData.sexoId.toString()} 
+                      onValueChange={(value) => handleSelectChange("sexo", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione género" />
                       </SelectTrigger>
                       <SelectContent>
                         {genders.map((gender) => (
-                          <SelectItem key={gender.id} value={gender.code}>
-                            {gender.name}
+                          <SelectItem key={gender.codigo} value={gender.codigo.toString()}>
+                            {gender.codigo === 1 ? "Masculino" : gender.codigo === 2 ? "Femenino" : "Otro"}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="fechaNacimiento">Fecha de Nacimiento</Label>
+                    <Input
+                      id="fechaNacimiento"
+                      name="fechaNacimiento"
+                      type="date"
+                      value={formData.fechaNacimiento}
+                      onChange={handleChange}
+                      required
+                      max={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="district">Distrito</Label>
                     <Select 
-                      value={formData.district} 
-                      onValueChange={(value) => handleSelectChange("district", value)}
+                      value={formData.distritoId.toString()} 
+                      onValueChange={(value) => handleSelectChange("distrito", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione distrito" />
                       </SelectTrigger>
                       <SelectContent>
                         {districts.map((district) => (
-                          <SelectItem key={district.id} value={district.code}>
-                            {district.name}
+                          <SelectItem key={district.codigo} value={district.codigo.toString()}>
+                            {district.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -182,9 +248,9 @@ export default function AddClientPage() {
                   <div className="space-y-2 col-span-2">
                     <Label htmlFor="address">Dirección</Label>
                     <Input
-                      id="address"
-                      name="address"
-                      value={formData.address}
+                      id="direccion"
+                      name="direccion"
+                      value={formData.direccion}
                       onChange={handleChange}
                       placeholder="Ej: Av. Arequipa 123"
                       required
@@ -193,9 +259,9 @@ export default function AddClientPage() {
                   <div className="space-y-2">
                     <Label htmlFor="phone">Teléfono</Label>
                     <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
+                      id="telefono"
+                      name="telefono"
+                      value={formData.telefono}
                       onChange={handleChange}
                       placeholder="Ej: 999888777"
                       required

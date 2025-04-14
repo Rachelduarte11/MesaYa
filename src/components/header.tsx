@@ -1,21 +1,18 @@
-import { Search, Share2 } from "lucide-react"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
 export function Header() {
-  return (
-    <div className="bg-white p-4 flex items-center gap-4 border-b">
-      <div className="flex-1 relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-        <Input type="text" placeholder="Search Product here..." className="pl-10 w-full" />
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-gray-500 text-sm">Floyd Miles</span>
-      </div>
-      <Button variant="ghost" size="icon">
-        <Share2 className="h-5 w-5" />
-      </Button>
-    </div>
-  )
-}
+  const router = useRouter()
 
+  return (
+    <header className="border-b">
+      <div className="flex h-16 items-center px-4">
+        <div className="ml-auto flex items-center space-x-4">
+          <Button variant="outline" onClick={() => router.push("/")}>
+            Inicio
+          </Button>
+        </div>
+      </div>
+    </header>
+  )
+} 

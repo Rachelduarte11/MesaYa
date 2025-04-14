@@ -10,92 +10,63 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-// Sample data for dropdowns
-const documentTypes = [
-  { id: 1, code: "DNI", name: "Documento Nacional de Identidad" },
-  { id: 2, code: "CE", name: "Carnet de Extranjería" },
-  { id: 3, code: "PAS", name: "Pasaporte" }
-]
-
-const districts = [
-  { id: 1, code: "MIR", name: "Miraflores" },
-  { id: 2, code: "SJL", name: "San Juan de Lurigancho" },
-  { id: 3, code: "SMP", name: "San Martín de Porres" },
-  { id: 4, code: "BAR", name: "Barranco" },
-  { id: 5, code: "SUR", name: "Surco" }
-]
-
-const genders = [
-  { id: 1, code: "M", name: "Masculino" },
-  { id: 2, code: "F", name: "Femenino" },
-  { id: 3, code: "O", name: "Otro" }
-]
-
-const roles = [
-  { id: 1, code: "ADMIN", name: "Administrador" },
-  { id: 2, code: "MANAGER", name: "Gerente" },
-  { id: 3, code: "WAITER", name: "Mesero" },
-  { id: 4, code: "KITCHEN", name: "Cocina" },
-  { id: 5, code: "CASHIER", name: "Cajero" }
-]
-
-// Sample personnel data - in a real app, this would come from an API
-const samplePersonnel = {
-  id: 1,
-  documentType: "DNI",
-  documentNumber: "12345678",
-  name: "Juan",
-  lastName: "Pérez",
-  gender: "M",
-  district: "MIR",
-  address: "Av. Arequipa 123",
-  phone: "999888777",
-  email: "juan.perez@example.com",
-  role: "WAITER",
-  salary: "2500",
-  startDate: "2023-01-15",
-  createdAt: "2023-01-15"
-}
+import { empleadoService } from "@/services/empleados/empleadoService"
+import { tipoDocumentoService } from "@/services/tipoDocumento/tipoDocumentoService"
+import { distritoService } from "@/services/distritos/distritoService"
+import { sexoService } from "@/services/sexos/sexoService"
+import { rolService } from "@/services/rol/rolService"
+import { Empleado, TipoDocumento, Distrito, Sexo, Rol } from "@/services/api/types"
 
 export default function EditPersonnelPage({ params }: { params: { id: string } }) {
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    documentType: "",
-    documentNumber: "",
-    name: "",
-    lastName: "",
-    gender: "",
-    district: "",
-    address: "",
-    phone: "",
+  const [documentTypes, setDocumentTypes] = useState<TipoDocumento[]>([])
+  const [districts, setDistricts] = useState<Distrito[]>([])
+  const [genders, setGenders] = useState<Sexo[]>([])
+  const [roles, setRoles] = useState<Rol[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [formData, setFormData] = useState<Partial<Empleado>>({
+    nombre: "",
+    apellidoPaterno: "",
+    apellidoMaterno: "",
+    documento: "",
+    direccion: "",
+    telefono: "",
     email: "",
-    role: "",
-    salary: "",
-    startDate: "",
+    estado: true,
+    fechaNacimiento: "",
+    fechaIngreso: new Date().toISOString().split('T')[0],
+    sueldo: 0,
+    tipoDocumento: { codigo: 0, nombre: "", estado: true },
+    rol: { codigo: 0, nombre: "", estado: true },
+    distrito: { codigo: 0, nombre: "", estado: true }
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Simulate API call to fetch personnel data
-    setTimeout(() => {
-      setFormData({
-        documentType: samplePersonnel.documentType,
-        documentNumber: samplePersonnel.documentNumber,
-        name: samplePersonnel.name,
-        lastName: samplePersonnel.lastName,
-        gender: samplePersonnel.gender,
-        district: samplePersonnel.district,
-        address: samplePersonnel.address,
-        phone: samplePersonnel.phone,
-        email: samplePersonnel.email,
-        role: samplePersonnel.role,
-        salary: samplePersonnel.salary,
-        startDate: samplePersonnel.startDate,
-      })
-      setIsLoading(false)
-    }, 500)
+    const fetchData = async () => {
+      try {
+        const [employee, docTypes, dists, sexos, rolesList] = await Promise.all([
+          empleadoService.getByCodigo(params.id),
+          tipoDocumentoService.getAllActive(),
+          distritoService.getAllActive(),
+          sexoService.getAllActive(),
+          rolService.getAllActive()
+        ])
+        setFormData(employee)
+        setDocumentTypes(docTypes)
+        setDistricts(dists)
+        setGenders(sexos)
+        setRoles(rolesList)
+      } catch (err) {
+        console.error("Error fetching data:", err)
+        setError("Error al cargar los datos. Por favor, intente nuevamente.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
   }, [params.id])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,19 +75,37 @@ export default function EditPersonnelPage({ params }: { params: { id: string } }
   }
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    if (name === "tipoDocumento") {
+      const selectedDocType = documentTypes.find(dt => dt.codigo.toString() === value)
+      if (selectedDocType) {
+        setFormData(prev => ({ ...prev, tipoDocumento: selectedDocType }))
+      }
+    } else if (name === "rol") {
+      const selectedRole = roles.find(r => r.codigo.toString() === value)
+      if (selectedRole) {
+        setFormData(prev => ({ ...prev, rol: selectedRole }))
+      }
+    } else if (name === "distrito") {
+      const selectedDistrict = districts.find(d => d.codigo.toString() === value)
+      if (selectedDistrict) {
+        setFormData(prev => ({ ...prev, distrito: selectedDistrict }))
+      }
+    }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Personnel data updated:", formData)
-      setIsSubmitting(false)
+    try {
+      await empleadoService.update(params.id, formData as any)
       router.push("/personnel")
-    }, 1000)
+    } catch (err) {
+      console.error("Error updating employee:", err)
+      setError("Error al actualizar el empleado. Por favor, intente nuevamente.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (isLoading) {
@@ -125,8 +114,26 @@ export default function EditPersonnelPage({ params }: { params: { id: string } }
         <SidebarNav />
         <div className="flex-1 flex flex-col overflow-hidden">
           <Header />
-          <div className="flex-1 overflow-auto p-6 flex items-center justify-center">
-            <p className="text-lg">Cargando datos del personal...</p>
+          <div className="flex-1 overflow-auto p-6">
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-auto p-6">
+            <div className="flex items-center justify-center h-full">
+              <div className="text-red-500">{error}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -158,109 +165,120 @@ export default function EditPersonnelPage({ params }: { params: { id: string } }
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="documentType">Tipo de Documento</Label>
-                    <Select 
-                      value={formData.documentType} 
-                      onValueChange={(value) => handleSelectChange("documentType", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione tipo de documento" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {documentTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.code}>
-                            {type.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="documentNumber">Número de Documento</Label>
+                    <Label htmlFor="nombre">Nombre</Label>
                     <Input
-                      id="documentNumber"
-                      name="documentNumber"
-                      value={formData.documentNumber}
-                      onChange={handleChange}
-                      placeholder="Ej: 12345678"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nombre</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
                       onChange={handleChange}
                       placeholder="Ej: Juan"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Apellido</Label>
+                    <Label htmlFor="apellidoPaterno">Apellido Paterno</Label>
                     <Input
-                      id="lastName"
-                      name="lastName"
-                      value={formData.lastName}
+                      id="apellidoPaterno"
+                      name="apellidoPaterno"
+                      value={formData.apellidoPaterno}
                       onChange={handleChange}
                       placeholder="Ej: Pérez"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="gender">Género</Label>
+                    <Label htmlFor="apellidoMaterno">Apellido Materno</Label>
+                    <Input
+                      id="apellidoMaterno"
+                      name="apellidoMaterno"
+                      value={formData.apellidoMaterno}
+                      onChange={handleChange}
+                      placeholder="Ej: García"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tipoDocumento">Tipo de Documento</Label>
                     <Select 
-                      value={formData.gender} 
-                      onValueChange={(value) => handleSelectChange("gender", value)}
+                      value={formData.tipoDocumento?.codigo.toString()} 
+                      onValueChange={(value) => handleSelectChange("tipoDocumento", value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccione género" />
+                        <SelectValue placeholder="Seleccione tipo de documento" />
                       </SelectTrigger>
                       <SelectContent>
-                        {genders.map((gender) => (
-                          <SelectItem key={gender.id} value={gender.code}>
-                            {gender.name}
+                        {documentTypes.map((type) => (
+                          <SelectItem key={type.codigo} value={type.codigo.toString()}>
+                            {type.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="district">Distrito</Label>
+                    <Label htmlFor="documento">Número de Documento</Label>
+                    <Input
+                      id="documento"
+                      name="documento"
+                      value={formData.documento}
+                      onChange={handleChange}
+                      placeholder="Ej: 12345678"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rol">Rol</Label>
                     <Select 
-                      value={formData.district} 
-                      onValueChange={(value) => handleSelectChange("district", value)}
+                      value={formData.rol?.codigo.toString()} 
+                      onValueChange={(value) => handleSelectChange("rol", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roles.map((role) => (
+                          <SelectItem key={role.codigo} value={role.codigo.toString()}>
+                            {role.nombre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="distrito">Distrito</Label>
+                    <Select 
+                      value={formData.distrito?.codigo.toString()} 
+                      onValueChange={(value) => handleSelectChange("distrito", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione distrito" />
                       </SelectTrigger>
                       <SelectContent>
                         {districts.map((district) => (
-                          <SelectItem key={district.id} value={district.code}>
-                            {district.name}
+                          <SelectItem key={district.codigo} value={district.codigo.toString()}>
+                            {district.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2 col-span-2">
-                    <Label htmlFor="address">Dirección</Label>
+                    <Label htmlFor="direccion">Dirección</Label>
                     <Input
-                      id="address"
-                      name="address"
-                      value={formData.address}
+                      id="direccion"
+                      name="direccion"
+                      value={formData.direccion}
                       onChange={handleChange}
                       placeholder="Ej: Av. Arequipa 123"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Teléfono</Label>
+                    <Label htmlFor="telefono">Teléfono</Label>
                     <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
+                      id="telefono"
+                      name="telefono"
+                      value={formData.telefono}
                       onChange={handleChange}
                       placeholder="Ej: 999888777"
                       required
@@ -279,44 +297,40 @@ export default function EditPersonnelPage({ params }: { params: { id: string } }
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="role">Rol</Label>
-                    <Select 
-                      value={formData.role} 
-                      onValueChange={(value) => handleSelectChange("role", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione rol" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles.map((role) => (
-                          <SelectItem key={role.id} value={role.code}>
-                            {role.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="salary">Salario</Label>
+                    <Label htmlFor="fechaNacimiento">Fecha de Nacimiento</Label>
                     <Input
-                      id="salary"
-                      name="salary"
-                      type="number"
-                      value={formData.salary}
+                      id="fechaNacimiento"
+                      name="fechaNacimiento"
+                      type="date"
+                      value={formData.fechaNacimiento}
                       onChange={handleChange}
-                      placeholder="Ej: 2500"
                       required
+                      max={new Date().toISOString().split('T')[0]}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="startDate">Fecha de Inicio</Label>
+                    <Label htmlFor="fechaIngreso">Fecha de Ingreso</Label>
                     <Input
-                      id="startDate"
-                      name="startDate"
+                      id="fechaIngreso"
+                      name="fechaIngreso"
                       type="date"
-                      value={formData.startDate}
+                      value={formData.fechaIngreso}
                       onChange={handleChange}
                       required
+                      max={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="sueldo">Sueldo</Label>
+                    <Input
+                      id="sueldo"
+                      name="sueldo"
+                      type="number"
+                      value={formData.sueldo}
+                      onChange={handleChange}
+                      placeholder="Ej: 2500"
+                      required
+                      min="0"
                     />
                   </div>
                 </div>
@@ -329,7 +343,7 @@ export default function EditPersonnelPage({ params }: { params: { id: string } }
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Guardando..." : "Guardar Cambios"}
+                  {isSubmitting ? "Guardando..." : "Guardar"}
                 </Button>
               </CardFooter>
             </form>

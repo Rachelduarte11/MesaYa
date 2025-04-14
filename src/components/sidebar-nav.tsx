@@ -46,9 +46,10 @@ export function SidebarNav() {
       menuKey: "pedidos",
       path: "/order",
       submenuItems: [
+        { icon: Eye, label: "Ver Pedidos", path: "/order" },
         { icon: PlusCircle, label: "Agregar Pedido", path: "/order/add" },
-        { icon: Eye, label: "Ver Pedidos", path: "/order/see" },
-        { icon: ClipboardList, label: "Detalles de Pedidos", path: "/order/details" },
+        
+        //{ icon: ClipboardList, label: "Detalles de Pedidos", path: "/order/details" },
       ],
     },
     { 
@@ -60,8 +61,8 @@ export function SidebarNav() {
     { 
       icon: UserCog, 
       label: "Personal", 
-      color: pathname.startsWith("/staff") ? "text-green-600" : "text-gray-600", 
-      path: "/staff" 
+      color: pathname.startsWith("/personnel") ? "text-green-600" : "text-gray-600", 
+      path: "/personnel" 
     },
     { 
       icon: Utensils, 
@@ -148,10 +149,6 @@ export function SidebarNav() {
           </div>
         ))}
       </nav>
-      <Button variant="ghost" className="w-full justify-start mt-auto text-gray-600 absolute bottom-4">
-        <LogOut className="mr-2 h-4 w-4" />
-        Cerrar Sesión
-      </Button>
     </div>
   )
 }
