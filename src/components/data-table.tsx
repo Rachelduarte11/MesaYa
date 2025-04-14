@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Edit, Trash2, UserPlus2, Loader2 } from "lucide-react"
+import { Search, Edit, Trash2, Loader2 } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,55 +17,72 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Cliente } from "@/services/api/types"
 import { Badge } from "@/components/ui/badge"
+import { VerTodosRegistros } from "@/components/ui/buttons/ver-todos-registros"
 
-interface ClientManagementProps {
-  clients: Cliente[]
+export interface Column {
+  key: string
+  label: string
+  render?: (value: any, row: any) => React.ReactNode
+}
+
+interface DataTableProps {
+  title: string
+  description: string
+  data: any[]
+  columns: Column[]
   loading: boolean
   error: string | null
   onDelete: (id: string) => Promise<void>
   showAll?: boolean
   searchInputProps?: any
+  searchPlaceholder?: string
+  allRecordsPath: string
+  addButtonPath?: string
+  addButtonLabel?: string
+  emptyMessage?: string
+  deleteConfirmationMessage?: string
 }
 
-export function ClientManagement({ 
-  clients = [], 
+export function DataTable({ 
+  title,
+  description,
+  data = [], 
+  columns,
   loading, 
   error, 
   onDelete,
   showAll = false,
-  searchInputProps
-}: ClientManagementProps) {
+  searchInputProps,
+  searchPlaceholder = "Buscar...",
+  allRecordsPath,
+  addButtonPath,
+  addButtonLabel,
+  emptyMessage = "No hay registros disponibles",
+  deleteConfirmationMessage = "Esta acción no se puede deshacer. Se eliminará permanentemente el registro."
+}: DataTableProps) {
   const router = useRouter()
-  const [selectedClient, setSelectedClient] = useState<Cliente | null>(null)
+  const [selectedItem, setSelectedItem] = useState<any | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
-  // Filter clients based on showAll prop
-  const displayedClients = showAll ? clients : clients.filter(client => client.estado === true);
-
-  useEffect(() => {
-    console.log('ClientManagement: Clients updated:', clients);
-  }, [clients]);
-
-  const handleDeleteClick = (client: Cliente) => {
-    setSelectedClient(client);
-    setIsDeleteModalOpen(true);
+  const handleDeleteClick = (item: any) => {
+    setSelectedItem(item)
+    setIsDeleteModalOpen(true)
   }
 
   const handleConfirmDelete = async () => {
-    if (selectedClient) {
+    if (selectedItem) {
       try {
-        await onDelete(selectedClient.codigo);
-        setIsDeleteModalOpen(false);
-        setSelectedClient(null);
+        await onDelete(selectedItem.codigo)
+        setIsDeleteModalOpen(false)
+        setSelectedItem(null)
       } catch (err) {
-        console.error('ClientManagement: Error in handleDelete:', err);
+        console.error('Error in handleDelete:', err)
       }
     }
   }
 
-  if (loading && !clients.length) {
+  if (loading && !data.length) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -83,77 +100,69 @@ export function ClientManagement({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{showAll ? "Todos los Clientes" : "Gestión de Clientes"}</CardTitle>
-        <CardDescription>
-          {showAll ? "Lista completa de clientes" : "Administra los clientes del restaurante"}
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </div>
+        {addButtonPath && (
+          <Button onClick={() => router.push(addButtonPath)}>
+            {addButtonLabel || "Nuevo Registro"}
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         <div className="flex justify-between items-center mb-4">
           <div className="relative w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
-              placeholder="Buscar clientes..."
+              placeholder={searchPlaceholder}
               {...searchInputProps}
               className="pl-8"
             />
           </div>
-          <Button onClick={() => router.push("/clients/add")}>
-            <UserPlus2 className="mr-2 h-4 w-4" />
-            Nuevo Cliente
-          </Button>
+          <VerTodosRegistros path={allRecordsPath} />
         </div>
 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nombre Completo</TableHead>
-              <TableHead>Documento</TableHead>
-              <TableHead>Teléfono</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Dirección</TableHead>
-              <TableHead>Estado</TableHead>
+              {columns.map((column) => (
+                <TableHead key={column.key}>{column.label}</TableHead>
+              ))}
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {displayedClients.length === 0 ? (
+            {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4">
-                  No hay clientes disponibles
+                <TableCell colSpan={columns.length + 1} className="text-center py-4">
+                  {emptyMessage}
                 </TableCell>
               </TableRow>
             ) : (
-              displayedClients.map((client) => (
-                <TableRow key={client.codigo}>
-                  <TableCell>
-                    {client.nombre} {client.apellidoPaterno} {client.apellidoMaterno}
-                  </TableCell>
-                  <TableCell>{client.documento}</TableCell>
-                  <TableCell>{client.telefono}</TableCell>
-                  <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.direccion}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={client.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
-                    >
-                      {client.estado ? 'Activo' : 'Inactivo'}
-                    </Badge>
-                  </TableCell>
+              data.map((item) => (
+                <TableRow key={item.codigo}>
+                  {columns.map((column) => (
+                    <TableCell key={column.key}>
+                      {column.render 
+                        ? column.render(item[column.key], item)
+                        : item[column.key]}
+                    </TableCell>
+                  ))}
                   <TableCell>
                     <div className="flex justify-end space-x-2">
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => router.push(`/clients/${client.codigo}/edit`)}
+                        onClick={() => router.push(`/${allRecordsPath.split('/')[1]}/${item.codigo}/edit`)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteClick(client)}
+                        onClick={() => handleDeleteClick(item)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -171,7 +180,7 @@ export function ClientManagement({
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el cliente "{selectedClient?.nombre} {selectedClient?.apellidoPaterno}".
+              {deleteConfirmationMessage}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -184,5 +193,4 @@ export function ClientManagement({
       </AlertDialog>
     </Card>
   )
-}
-
+} 

@@ -2,18 +2,34 @@
 
 import { useEffect, useCallback } from "react"
 import { SidebarNav } from "@/components/sidebar-nav"
-import { Header } from "@/components/header"
-import { ClientManagement } from "@/components/client-management"
 import { useClientManagement } from "@/hooks/useClientManagement"
-import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { useForm } from "react-hook-form"
 import debounce from "lodash/debounce"
+import { DataTable, Column } from "@/components/data-table"
+import { StatusBadge } from "@/components/ui/badges/status-badge";
 
 type SearchFormData = {
   search: string
 }
+
+const columns: Column[] = [
+  { 
+    key: "nombreCompleto", 
+    label: "Nombre Completo",
+    render: (_, row) => `${row.nombre} ${row.apellidoPaterno} ${row.apellidoMaterno}`
+  },
+  { key: "documento", label: "Documento" },
+  { key: "telefono", label: "Teléfono" },
+  { key: "email", label: "Email" },
+  { key: "direccion", label: "Dirección" },
+  { 
+    key: "estado", 
+    label: "Estado",
+    render: (value: string) => <StatusBadge status={value as any} />
+  }
+]
 
 export default function ClientManagementPage() {
   const router = useRouter()
@@ -28,7 +44,7 @@ export default function ClientManagementPage() {
     loading,
     error,
     clients,
-    fetchClients,
+    fetchActiveClients,
     deleteClient,
     searchClients
   } = useClientManagement()
@@ -42,21 +58,20 @@ export default function ClientManagementPage() {
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
-      fetchClients()
+      // fetchActiveClients()
     } else {
       debouncedSearch(searchTerm)
     }
-  }, [searchTerm, debouncedSearch, fetchClients])
+  }, [searchTerm, debouncedSearch, fetchActiveClients])
 
   useEffect(() => {
-    fetchClients()
-  }, [fetchClients])
+    fetchActiveClients()
+  }, [fetchActiveClients])
 
   return (
     <div className="flex h-screen bg-gray-100">
       <SidebarNav />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
         <div className="flex-1 overflow-auto p-6">
           <div className="flex justify-between items-center mb-6">
             <Breadcrumb 
@@ -65,20 +80,22 @@ export default function ClientManagementPage() {
                 { label: "Clientes", href: "/clients" }
               ]} 
             />
-            <Button 
-              variant="outline"
-              className="text-black border-gray-300 hover:bg-green-600 hover:text-white hover:border-green-600"
-              onClick={() => router.push('/clients/all')}
-            >
-              Ver todos los registros
-            </Button>
           </div>
-          <ClientManagement 
-            clients={clients}
+          <DataTable
+            title="Gestión de Clientes"
+            description="Administra los clientes del restaurante"
+            data={clients}
+            columns={columns}
             loading={loading}
             error={error}
             onDelete={deleteClient}
+            allRecordsPath="/clients/all"
+            addButtonPath="/clients/add"
+            addButtonLabel="Nuevo Cliente"
+            searchPlaceholder="Buscar clientes..."
             searchInputProps={register("search")}
+            emptyMessage="No hay clientes disponibles"
+            deleteConfirmationMessage="Esta acción no se puede deshacer. Se eliminará permanentemente el cliente."
           />
         </div>
       </div>

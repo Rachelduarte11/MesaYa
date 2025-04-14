@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
-import { Header } from "@/components/header"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -101,7 +100,6 @@ export default function AddPlatePage() {
       <div className="flex h-screen bg-gray-100">
         <SidebarNav />
         <div className="flex-1 flex flex-col overflow-hidden">
-          <Header />
           <div className="flex-1 overflow-auto p-6">
             <div className="flex justify-center items-center h-64">
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -116,7 +114,6 @@ export default function AddPlatePage() {
     <div className="flex h-screen bg-gray-100">
       <SidebarNav />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
         <div className="flex-1 overflow-auto p-6">
           <div className="flex justify-between items-center mb-6">
             <Breadcrumb 

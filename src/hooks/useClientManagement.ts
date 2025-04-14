@@ -60,21 +60,21 @@ export const useClientManagement = () => {
   }, []);
 
   // Create new client
-  const createClient = async (cliente: CreateClienteRequest): Promise<Cliente | null> => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await clienteService.create(cliente);
-      setClients((prev) => [...prev, response]);
-      return response;
-    } catch (err) {
-      setError('Error al crear el cliente');
-      console.error('Error creating client:', err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const createClient = async (cliente: CreateClienteRequest): Promise<Cliente | null> => {
+  //   try {
+  //     setLoading(true);
+  //     setError(null);
+  //     const response = await clienteService.create(cliente);
+  //     setClients((prev) => [...prev, response]);
+  //     return response;
+  //   } catch (err) {
+  //     setError('Error al crear el cliente');
+  //     console.error('Error creating client:', err);
+  //     return null;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // Update client
   const updateClient = async (codigo: string, cliente: UpdateClienteRequest): Promise<Cliente | null> => {
@@ -143,7 +143,7 @@ export const useClientManagement = () => {
     fetchClients,
     fetchActiveClients,
     fetchClient,
-    createClient,
+    // createClient,
     updateClient,
     deleteClient,
     searchClients,

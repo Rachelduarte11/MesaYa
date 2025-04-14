@@ -104,20 +104,20 @@ export const useEmployeeManagement = () => {
     setCurrentPage(page);
   };
 
-  const createEmployee = async (empleado: CreateEmpleadoRequest): Promise<Empleado | null> => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await empleadoService.create(empleado);
-      return response;
-    } catch (err) {
-      setError('Error al crear el empleado');
-      console.error('Error creating employee:', err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const createEmployee = async (empleado: CreateEmpleadoRequest): Promise<Empleado | null> => {
+  //   try {
+  //     setLoading(true);
+  //     setError(null);
+  //     const response = await empleadoService.create(empleado);
+  //     return response;
+  //   } catch (err) {
+  //     setError('Error al crear el empleado');
+  //     console.error('Error creating employee:', err);
+  //     return null;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const updateEmployee = async (codigo: string, empleado: UpdateEmpleadoRequest): Promise<Empleado | null> => {
     try {
@@ -160,7 +160,7 @@ export const useEmployeeManagement = () => {
     handleSearch,
     handleDelete,
     handlePageChange,
-    createEmployee,
+    // createEmployee,
     updateEmployee,
     deleteEmployee,
   };

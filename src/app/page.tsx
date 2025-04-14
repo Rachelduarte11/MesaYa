@@ -1,5 +1,4 @@
 import { SidebarNav } from "../components/sidebar-nav"
-import { Header } from "../components/header"
 import { CategoryFilter } from "../components/category-filter"
 import { FoodGrid } from "../components/food-grid"
 import { Cart } from "../components/cart"
