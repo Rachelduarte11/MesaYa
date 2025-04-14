@@ -9,6 +9,9 @@ import { useEmployeeManagement } from "@/hooks/useEmployeeManagement"
 import debounce from "lodash/debounce"
 import { DataTable, Column } from "@/components/data-table"
 import { StatusBadge } from "@/components/ui/badges/status-badge"
+import { Button } from "@/components/ui/button"
+import { PlusCircle } from "lucide-react"
+import { VerTodosRegistros } from "@/components/ui/buttons/ver-todos-registros"
 
 type SearchFormData = {
   search: string
@@ -51,7 +54,10 @@ export default function StaffManagementPage() {
     error,
     fetchActiveEmployees,
     handleDelete: originalHandleDelete,
-    handleSearch
+    handleSearch,
+    currentPage,
+    totalPages,
+    handlePageChange
   } = useEmployeeManagement()
 
   const handleDelete = async (id: string) => {
@@ -89,22 +95,25 @@ export default function StaffManagementPage() {
                 { label: "Personal", href: "/personnel" }
               ]} 
             />
+            
+            <VerTodosRegistros path="/clients/all" />
           </div>
+
           <DataTable
             title="Gestión de Personal"
             description="Administra el personal del restaurante"
-            data={employees}
             columns={columns}
+            data={employees}
             loading={loading}
             error={error}
             onDelete={handleDelete}
-            allRecordsPath="/personnel/all"
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            searchPlaceholder="Buscar personal..."
+            searchRegister={register("search")}
             addButtonPath="/personnel/add"
-            addButtonLabel="Nuevo Empleado"
-            searchPlaceholder="Buscar empleados..."
-            searchInputProps={register("search")}
-            emptyMessage="No hay empleados disponibles"
-            deleteConfirmationMessage="Esta acción no se puede deshacer. Se eliminará permanentemente el empleado."
+            addButtonLabel="Agregar Personal"
           />
         </div>
       </div>

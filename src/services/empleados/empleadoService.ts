@@ -1,24 +1,7 @@
 import api from '../api/config/axios';
-import { Empleado, CreateEmpleadoRequest, UpdateEmpleadoRequest, ApiResponse } from '../api/types';
+import { Empleado, NewEmpleadoRequest, UpdateEmpleadoRequest, ApiResponse } from '../api/types';
 import API_ENDPOINTS from '../api/config/endpoints';
 
-// Define the new request type to match the required JSON structure
-interface NewEmpleadoRequest {
-  nombre: string;
-  apellidoPaterno: string;
-  apellidoMaterno: string;
-  documento: string;
-  direccion: string;
-  telefono: string;
-  email: string;
-  fechaNacimiento: string;
-  estado: boolean;
-  sueldo: number;
-  tipoDocumentoId: number;
-  rolId: number;
-  distritoId: number;
-  fechaIngreso: string;
-}
 
 export const empleadoService = {
   getAll: async (): Promise<Empleado[]> => {

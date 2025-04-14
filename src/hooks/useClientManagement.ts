@@ -7,6 +7,9 @@ export const useClientManagement = () => {
   const [error, setError] = useState<string | null>(null);
   const [clients, setClients] = useState<Cliente[]>([]);
   const [currentClient, setCurrentClient] = useState<Cliente | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isSearching, setIsSearching] = useState(false);
+  const itemsPerPage = 5;
 
   // Fetch all clients
   const fetchClients = useCallback(async () => {
@@ -120,6 +123,7 @@ export const useClientManagement = () => {
     try {
       setLoading(true);
       setError(null);
+      setIsSearching(true);
       const response = await clienteService.search(query);
       if (response) {
         setClients(response);
@@ -127,6 +131,7 @@ export const useClientManagement = () => {
         setError('No se encontraron resultados');
         setClients([]);
       }
+      setCurrentPage(1);
     } catch (err) {
       setError('Error al buscar clientes');
       setClients([]);
@@ -135,10 +140,20 @@ export const useClientManagement = () => {
     }
   }, []);
 
+  // Pagination
+  const totalPages = Math.ceil(clients.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentClients = isSearching ? clients : clients.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return {
     loading,
     error,
-    clients,
+    clients: currentClients,
     currentClient,
     fetchClients,
     fetchActiveClients,
@@ -147,5 +162,8 @@ export const useClientManagement = () => {
     updateClient,
     deleteClient,
     searchClients,
+    currentPage,
+    totalPages,
+    handlePageChange,
   };
 }; 

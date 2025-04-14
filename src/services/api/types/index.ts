@@ -136,9 +136,9 @@ export interface CreateClienteRequest {
   email: string;
   fechaNacimiento: string;
   estado: boolean;
-  tipoDocumento: TipoDocumento;
-  sexo: Sexo;
-  distrito: Distrito;
+  distritoId: number;
+  sexoId: number;
+  tipoDocumentoId: number;
 }
 
 export interface UpdateClienteRequest extends Partial<CreateClienteRequest> {

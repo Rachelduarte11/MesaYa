@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { empleadoService } from '@/services/empleados/empleadoService';
-import { Empleado, CreateEmpleadoRequest, UpdateEmpleadoRequest } from '@/services/api/types';
+import { Empleado, NewEmpleadoRequest, UpdateEmpleadoRequest } from '@/services/api/types';
 
 export const useEmployeeManagement = () => {
   const [employees, setEmployees] = useState<Empleado[]>([]);

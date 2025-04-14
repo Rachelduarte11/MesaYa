@@ -47,7 +47,10 @@ export default function AllPersonnelPage() {
     error,
     fetchEmployees,
     handleDelete: originalHandleDelete,
-    handleSearch
+    handleSearch,
+    currentPage,
+    totalPages,
+    handlePageChange
   } = useEmployeeManagement()
 
   const handleDelete = async (id: string) => {
@@ -62,6 +65,14 @@ export default function AllPersonnelPage() {
   )
 
   useEffect(() => {
+    if (searchTerm.trim() === '') {
+      fetchEmployees()
+    } else {
+      debouncedSearch(searchTerm)
+    }
+  }, [searchTerm, debouncedSearch, fetchEmployees])
+
+  useEffect(() => {
     fetchEmployees()
   }, [fetchEmployees])
 
@@ -70,28 +81,27 @@ export default function AllPersonnelPage() {
       <SidebarNav />
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-auto p-6">
-          <Breadcrumb 
-            items={[
-              { label: "Inicio", href: "/" }, 
-              { label: "Personal", href: "/personnel" },
-              { label: "Todos los registros" }
-            ]} 
-          />
+          <div className="flex justify-between items-center mb-6">
+            <Breadcrumb 
+              items={[
+                { label: "Inicio", href: "/" }, 
+                { label: "Personal", href: "/personnel" },
+                { label: "Todos los Registros" }
+              ]} 
+            />
+          </div>
+
           <DataTable
-            title="Gestión de Personal"
-            description="Administra el personal del restaurante"
-            data={employees}
             columns={columns}
+            data={employees}
             loading={loading}
             error={error}
             onDelete={handleDelete}
-            allRecordsPath="/personnel/all"
-            addButtonPath="/personnel/add"
-            addButtonLabel="Nuevo Empleado"
-            searchPlaceholder="Buscar empleados..."
-            searchInputProps={register("search")}
-            emptyMessage="No hay empleados disponibles"
-            deleteConfirmationMessage="Esta acción no se puede deshacer. Se eliminará permanentemente el empleado."
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            searchPlaceholder="Buscar personal..."
+            searchRegister={register("search")}
           />
         </div>
       </div>

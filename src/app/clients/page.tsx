@@ -9,6 +9,10 @@ import { useForm } from "react-hook-form"
 import debounce from "lodash/debounce"
 import { DataTable, Column } from "@/components/data-table"
 import { StatusBadge } from "@/components/ui/badges/status-badge";
+import { Button } from "@/components/ui/button"
+import { PlusCircle } from "lucide-react"
+import { VerTodosRegistros } from "@/components/ui/buttons/ver-todos-registros"
+import Link from "next/link"
 
 type SearchFormData = {
   search: string
@@ -45,8 +49,11 @@ export default function ClientManagementPage() {
     error,
     clients,
     fetchActiveClients,
+    searchClients,
+    currentPage,
+    totalPages,
+    handlePageChange,
     deleteClient,
-    searchClients
   } = useClientManagement()
 
   const debouncedSearch = useCallback(
@@ -67,6 +74,10 @@ export default function ClientManagementPage() {
   useEffect(() => {
     fetchActiveClients()
   }, [fetchActiveClients])
+  
+  const handleDelete = async (id: string) => {
+    await deleteClient(id);
+  };
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -80,6 +91,10 @@ export default function ClientManagementPage() {
                 { label: "Clientes", href: "/clients" }
               ]} 
             />
+            
+            <VerTodosRegistros path="/clients/all"/>
+              
+            
           </div>
           <DataTable
             title="Gestión de Clientes"
@@ -88,14 +103,16 @@ export default function ClientManagementPage() {
             columns={columns}
             loading={loading}
             error={error}
-            onDelete={deleteClient}
-            allRecordsPath="/clients/all"
-            addButtonPath="/clients/add"
-            addButtonLabel="Nuevo Cliente"
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
             searchPlaceholder="Buscar clientes..."
             searchInputProps={register("search")}
             emptyMessage="No hay clientes disponibles"
             deleteConfirmationMessage="Esta acción no se puede deshacer. Se eliminará permanentemente el cliente."
+            addButtonPath="/clients/add"
+            addButtonLabel="Agregar Cliente"
+            onDelete={handleDelete}
           />
         </div>
       </div>
